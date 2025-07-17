@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom' // Import Link from react-router-dom
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn, formatNumber } from '@/lib/utils' // Assuming these are correctly set up and optimized
+import { cn } from '@/lib/utils' // Assuming these are correctly set up and optimized
+import { formatNumber } from '@/utils'
 
 interface StatCardProps {
 	title: string

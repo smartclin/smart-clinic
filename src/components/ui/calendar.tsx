@@ -2,7 +2,7 @@
 
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import * as React from 'react'
-import { type DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker'
+import { DayPicker, getDefaultClassNames } from 'react-day-picker'
 
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -43,10 +43,10 @@ function Calendar({
 					'size-(--cell-size) select-none p-0 aria-disabled:opacity-50',
 					defaultClassNames.button_previous,
 				),
-				buttonNext: cn(
+				button_next: cn(
 					buttonVariants({ variant: buttonVariant }),
 					'size-(--cell-size) select-none p-0 aria-disabled:opacity-50',
-					defaultClassNames.buttonNext,
+					defaultClassNames.button_next,
 				),
 				month_caption: cn(
 					'flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)',
@@ -75,10 +75,10 @@ function Calendar({
 					defaultClassNames.weekday,
 				),
 				week: cn('mt-2 flex w-full', defaultClassNames.week),
-				weekNumber_header: cn('w-(--cell-size) select-none', defaultClassNames.weekNumber_header),
-				weekNumber: cn(
+				week_number_header: cn('w-(--cell-size) select-none', defaultClassNames.week_number_header),
+				week_number: cn(
 					'select-none text-[0.8rem] text-muted-foreground',
-					defaultClassNames.weekNumber,
+					defaultClassNames.week_number,
 				),
 				day: cn(
 					'group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md',
@@ -157,13 +157,23 @@ function Calendar({
 		/>
 	)
 }
+type CalendarDay = { date: Date }
 
-function CalendarDayButton({
-	className,
-	day,
-	modifiers,
-	...props
-}: React.ComponentProps<typeof DayButton>) {
+type DayModifiers = {
+	focused?: boolean
+	selected?: boolean
+	range_end?: boolean
+	range_middle?: boolean
+	range_start?: boolean
+	// add others if needed
+}
+type CalendarDayButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+	day: CalendarDay
+	modifiers: DayModifiers
+	className?: string
+}
+
+function CalendarDayButton({ className, day, modifiers, ...props }: CalendarDayButtonProps) {
 	const defaultClassNames = getDefaultClassNames()
 
 	const ref = React.useRef<HTMLButtonElement>(null)
@@ -173,27 +183,35 @@ function CalendarDayButton({
 
 	return (
 		<Button
+			asChild
 			className={cn(
 				'flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-start=true]:rounded-l-md data-[range-end=true]:bg-primary data-[range-middle=true]:bg-accent data-[range-start=true]:bg-primary data-[selected-single=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-middle=true]:text-accent-foreground data-[range-start=true]:text-primary-foreground data-[selected-single=true]:text-primary-foreground group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground [&>span]:text-xs [&>span]:opacity-70',
 				defaultClassNames.day,
 				className,
 			)}
-			data-day={day.date.toLocaleDateString()}
-			data-range-end={modifiers.range_end}
-			data-range-middle={modifiers.range_middle}
-			data-range-start={modifiers.range_start}
-			data-selected-single={
-				modifiers.selected &&
-				!modifiers.range_start &&
-				!modifiers.range_end &&
-				!modifiers.range_middle
-			}
-			ref={ref}
-			size="icon"
-			variant="ghost"
-			{...props}
-		/>
+		>
+			<button
+				data-day={day.date.toLocaleDateString()}
+				data-range-end={modifiers.range_end || undefined}
+				data-range-middle={modifiers.range_middle || undefined}
+				data-range-start={modifiers.range_start || undefined}
+				data-selected-single={
+					modifiers.selected &&
+					!modifiers.range_start &&
+					!modifiers.range_end &&
+					!modifiers.range_middle
+						? true
+						: undefined
+				}
+				ref={ref}
+				type="button"
+				// size and variant are not standard <button> props, so do NOT pass them here
+				{...props}
+			>
+				{day.date.getDate()}
+			</button>
+		</Button>
 	)
 }
 
-export { Calendar, CalendarDayButton }
+export { CalendarDayButton, Calendar }

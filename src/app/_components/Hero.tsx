@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, HeartPulse } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -6,17 +7,18 @@ import { useEffect } from 'react'
 import { MotionDiv, MotionSpan } from '@/components/motionDev'
 import { Button } from '@/components/ui/button'
 import { useSession } from '@/lib/auth/auth-client'
-import { api } from '@/trpc/react'
+import { useTRPC } from '@/trpc/client'
 
 export default function Hero({
 	siteMetadata,
 }: {
 	siteMetadata: { name: string; description: string }
 }) {
+	const trpc = useTRPC()
 	const router = useRouter()
 	const { data: session, isPending } = useSession()
-	const healthStatus = api.healthCheck.useQuery()
-
+	// const healthStatus = api.healthCheck.useQuery()
+	const query = useQuery(trpc.healthCheck.queryOptions())
 	useEffect(() => {
 		if (session?.user?.role) {
 			router.push(`/${session.user.role}`)
@@ -68,19 +70,11 @@ export default function Hero({
 							<div className="flex items-center gap-2">
 								<div
 									className={`h-2 w-2 rounded-full ${
-										healthStatus.isLoading
-											? 'bg-yellow-400'
-											: healthStatus.data
-												? 'bg-green-500'
-												: 'bg-red-500'
+										query.isLoading ? 'bg-yellow-400' : query.data ? 'bg-green-500' : 'bg-red-500'
 									}`}
 								/>
 								<span className="text-muted-foreground text-sm">
-									{healthStatus.isLoading
-										? 'Checking...'
-										: healthStatus.data
-											? 'Connected'
-											: 'Disconnected'}
+									{query.isLoading ? 'Checking...' : query.data ? 'Connected' : 'Disconnected'}
 								</span>
 							</div>
 						</section>

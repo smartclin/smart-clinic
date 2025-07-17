@@ -1,6 +1,7 @@
 import { authRouter } from '@/server/api/routers/auth.route'
 import {
 	createCallerFactory,
+	createTRPCContext,
 	createTRPCRouter,
 	protectedProcedure,
 	publicProcedure,
@@ -8,7 +9,10 @@ import {
 
 import { adminRouter } from './routers/Admin.router'
 import { appointmentRouter } from './routers/Appointment.router'
+import { accountsRouter } from './routers/accounts'
+import { calendarsRouter } from './routers/calendars'
 import { doctorRouter } from './routers/Doctor.router'
+import { earlyAccessRouter } from './routers/early-access'
 import { medicalRecordsRouter } from './routers/MedicalRecords.router'
 import { patientRouter } from './routers/Patient.router'
 import { paymentRouter } from './routers/Payment.router'
@@ -29,7 +33,7 @@ export const appRouter = createTRPCRouter({
 	privateData: protectedProcedure.query(({ ctx }) => {
 		return {
 			message: 'This is private',
-			user: ctx.session.user,
+			user: ctx.user,
 		}
 	}),
 	todo: todoRouter,
@@ -41,6 +45,9 @@ export const appRouter = createTRPCRouter({
 	doctor: doctorRouter,
 	appointment: appointmentRouter,
 	admin: adminRouter,
+	accounts: accountsRouter,
+	calendars: calendarsRouter,
+	earlyAccess: earlyAccessRouter,
 })
 
 // export type definition of API
@@ -54,3 +61,5 @@ export type AppRouter = typeof appRouter
  *       ^? Post[]
  */
 export const createCaller = createCallerFactory(appRouter)
+
+export const createContext = createTRPCContext

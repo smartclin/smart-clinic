@@ -1,6 +1,6 @@
 import type { Services } from '@prisma/client'
 
-import { getServices } from '@/utils/services/admin'
+import { caller } from '@/trpc/server'
 
 import { AddService } from '../dialogs/add-service'
 import { Table } from '../tables/table'
@@ -34,7 +34,8 @@ const columns = [
 ]
 
 export const ServiceSettings = async () => {
-	const { data } = await getServices()
+	const trpcCaller = await caller()
+	const { data } = await trpcCaller.admin.getServices()
 
 	const renderRow = (item: Services) => (
 		<tr

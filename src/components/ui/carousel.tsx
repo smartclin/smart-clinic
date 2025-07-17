@@ -190,7 +190,7 @@ const CarouselItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
 CarouselItem.displayName = 'CarouselItem'
 
 const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
-	({ className, variant = 'outline', size = 'icon', ...props }, ref) => {
+	({ className, variant = 'outline', size = 'icon', ...props }) => {
 		const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
 		return (
@@ -204,13 +204,11 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
 				)}
 				disabled={!canScrollPrev}
 				onClick={scrollPrev}
-				ref={ref}
 				size={size}
 				variant={variant}
 				{...props}
 			>
 				<ArrowLeft className="h-4 w-4" />
-				<span className="sr-only">Previous slide</span>
 			</Button>
 		)
 	},
@@ -218,7 +216,7 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
 CarouselPrevious.displayName = 'CarouselPrevious'
 
 const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
-	({ className, variant = 'outline', size = 'icon', ...props }, ref) => {
+	({ className, variant = 'outline', size = 'icon', ...props }) => {
 		const { orientation, scrollNext, canScrollNext } = useCarousel()
 
 		return (
@@ -232,13 +230,11 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
 				)}
 				disabled={!canScrollNext}
 				onClick={scrollNext}
-				ref={ref}
 				size={size}
 				variant={variant}
 				{...props}
 			>
 				<ArrowRight className="h-4 w-4" />
-				<span className="sr-only">Next slide</span>
 			</Button>
 		)
 	},

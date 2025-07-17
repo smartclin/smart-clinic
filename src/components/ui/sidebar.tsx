@@ -2,7 +2,6 @@
 
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { PanelLeftIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -40,14 +39,12 @@ interface SidebarContextProps {
 export const SidebarContext = React.createContext<SidebarContextProps | undefined>(undefined)
 
 function _setCookie(name: string, value: string, maxAgeSeconds: number) {
-	if ('cookieStore' in window && typeof cookieStore.set === 'function') {
-		void cookieStore.set({
-			name,
-			value,
-			path: '/',
-			expires: Date.now() + maxAgeSeconds * 1000, // optional if you want expires over maxAge
-		})
-	}
+	const expiresAt = Date.now() + maxAgeSeconds * 1000
+
+	localStorage.setItem(name, JSON.stringify({
+		value,
+		expiresAt,
+	}))
 }
 
 function SidebarProvider({
@@ -269,21 +266,21 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
 	const { toggleSidebar } = useSidebar()
 
 	return (
-		<Button
-			className={cn('size-7', className)}
-			data-sidebar="trigger"
-			data-slot="sidebar-trigger"
-			onClick={event => {
-				onClick?.(event)
-				toggleSidebar()
-			}}
-			size="icon"
-			variant="ghost"
-			{...props}
-		>
-			<PanelLeftIcon />
-			<span className="sr-only">Toggle Sidebar</span>
-		</Button>
+		 <Button
+            className={cn('size-7', className)}
+            data-sidebar="trigger"
+            data-slot="sidebar-trigger"
+            onClick={event => {
+                onClick?.(event)
+                toggleSidebar()
+            }}
+            size="icon"
+            variant="ghost"
+            {...props}
+        >
+            {/* Wrap children in a React Fragment */}
+            
+                </Button>
 	)
 }
 

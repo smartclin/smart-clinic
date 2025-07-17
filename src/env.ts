@@ -7,14 +7,14 @@ export const env = createEnv({
 	 * These are **never** exposed to the client.
 	 */
 	server: {
-		WEAVIATE_DB_HOST: z.string(),
-		WEAVIATE_DB_SCHEME: z.string(),
 		NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-		DATABASE_URL: z.url({ message: 'Invalid DATABASE_URL format.' }),
+		DATABASE_URL: z.string().url({ message: 'Invalid DATABASE_URL format.' }),
 		BETTER_AUTH_SECRET: z.string().min(1, 'BETTER_AUTH_SECRET cannot be empty.'),
-		BETTER_AUTH_URL: z.url({ message: 'Invalid BETTER_AUTH_URL format.' }),
-		CORS_ORIGIN: z.url({ message: 'Invalid CORS_ORIGIN format.' }),
-		ADMIN_EMAIL: z.email().optional(),
+		BETTER_AUTH_URL: z.string().url({ message: 'Invalid BETTER_AUTH_URL format.' }),
+		CORS_ORIGIN: z.string().url({ message: 'Invalid CORS_ORIGIN format.' }),
+		GOOGLE_CLIENT_ID: z.string().min(1),
+		GOOGLE_CLIENT_SECRET: z.string().min(1),
+		ADMIN_EMAIL: z.string().email().optional(),
 		ADMIN_PASSWORD: z.string().min(8).optional(),
 		ADMIN_NAME: z.string().optional(),
 	},
@@ -31,17 +31,17 @@ export const env = createEnv({
 
 		NEXT_PUBLIC_VERCEL_URL: z.string().optional(),
 
-		NEXT_PUBLIC_BETTER_AUTH_URL: z.url({
+		NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url({
 			message: 'Invalid NEXT_PUBLIC_BETTER_AUTH_URL format.',
 		}),
 
-		NEXT_PUBLIC_SERVER_URL: z.url({
+		NEXT_PUBLIC_SERVER_URL: z.string().url({
 			message: 'Invalid NEXT_PUBLIC_SERVER_URL format.',
 		}),
 	},
 
 	/**
-	 * Runtime environment loading from process.env.
+	 * Provide environment variables here (so they’re available at build/runtime).
 	 */
 	runtimeEnv: {
 		NODE_ENV: process.env.NODE_ENV,
@@ -52,9 +52,8 @@ export const env = createEnv({
 		ADMIN_EMAIL: process.env.ADMIN_EMAIL,
 		ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
 		ADMIN_NAME: process.env.ADMIN_NAME,
-		WEAVIATE_DB_HOST: process.env.WEAVIATE_DB_HOST,
-		WEAVIATE_DB_SCHEME: process.env.WEAVIATE_DB_SCHEME,
-
+		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 		NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 		NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
 		NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
@@ -62,13 +61,12 @@ export const env = createEnv({
 	},
 
 	/**
-	 * Skip validation if `SKIP_ENV_VALIDATION=1` is set.
-	 * Useful in CI/Docker contexts.
+	 * Only validate `.env` strictly in production.
 	 */
-	skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+	skipValidation: process.env.NODE_ENV !== 'production',
 
 	/**
-	 * Treat empty strings as undefined.
+	 * Treat empty strings as undefined (safer defaults).
 	 */
 	emptyStringAsUndefined: true,
 })

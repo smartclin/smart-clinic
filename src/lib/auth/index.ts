@@ -5,8 +5,10 @@ import { admin } from 'better-auth/plugins'
 import { headers } from 'next/headers'
 import { cache } from 'react'
 
+import { env } from '@/env'
 import db from '@/server/db'
 
+import { createProviderHandler } from './account-linking'
 import { ac, allRoles } from './roles'
 
 export const auth = betterAuth({
@@ -33,6 +35,16 @@ export const auth = betterAuth({
 				type: 'string',
 				required: false,
 			},
+			defaultAccountId: {
+				type: 'string',
+				required: false,
+				input: false,
+			},
+			defaultCalendarId: {
+				type: 'string',
+				required: false,
+				input: false,
+			},
 		},
 		changeEmail: {
 			enabled: true,
@@ -41,6 +53,31 @@ export const auth = betterAuth({
 		deleteUser: {
 			enabled: true,
 			deleteSessions: true,
+		},
+	},
+	account: {
+		accountLinking: {
+			enabled: true,
+			allowDifferentEmails: true,
+			trustedProviders: ['google', 'microsoft'],
+		},
+	},
+	databaseHooks: {
+		account: {
+			// we are using the after hook because better-auth does not
+			// pass additional fields before account creation
+			create: {
+				after: createProviderHandler,
+			},
+		},
+	},
+	socialProviders: {
+		google: {
+			clientId: env.GOOGLE_CLIENT_ID,
+			clientSecret: env.GOOGLE_CLIENT_SECRET,
+			accessType: 'offline',
+			prompt: 'consent',
+			overrideUserInfoOnSignIn: true,
 		},
 	},
 	rateLimit: {

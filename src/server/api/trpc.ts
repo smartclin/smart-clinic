@@ -6,15 +6,18 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import 'server-only'
 
+import type { Account } from '@prisma/client'
 import { initTRPC, TRPCError } from '@trpc/server'
-import { headers } from 'next/headers'
 import superjson from 'superjson'
 import { ZodError } from 'zod/v4'
 
 import authServer from '@/lib/auth'
 import db from '@/server/db'
 
+import { accountToProvider } from '../providers'
+import { getAccounts } from '../utils/accounts'
 /**
  * CONTEXT
  *
@@ -28,11 +31,13 @@ import db from '@/server/db'
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-	const session = await authServer.getSession({ headers: await headers() })
-
+	const session = await authServer.getSession({
+		headers: opts.headers,
+	})
 	return {
 		db,
-		session,
+		session: session?.session,
+		user: session?.user,
 		...opts,
 	}
 }
@@ -57,7 +62,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 	},
 })
 const isAdmin = t.middleware(({ ctx, next }) => {
-	if (!ctx.session?.user || ctx.session.user.role !== 'ADMIN') {
+	if (!ctx.user || ctx.user.role !== 'ADMIN') {
 		throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access only' })
 	}
 	return next()
@@ -127,7 +132,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware)
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
-	if (!ctx.session?.user) {
+	if (!ctx.user) {
 		throw new TRPCError({
 			code: 'UNAUTHORIZED',
 			message: 'You must be authenticated to access this route.',
@@ -136,8 +141,33 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
 
 	return next({
 		ctx: {
-			// infers the `session` as non-nullable
-			session: { ...ctx.session, user: ctx.session.user },
+			...ctx,
+			session: { ...ctx.session },
+			user: { ...ctx.user },
 		},
 	})
+})
+
+export const calendarProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+	try {
+		const accounts: Account[] = await getAccounts(ctx.user, ctx.headers)
+
+		const providers = accounts.map(account => ({
+			account,
+			client: accountToProvider(account),
+		}))
+
+		return next({
+			ctx: {
+				...ctx,
+				providers,
+				accounts,
+			},
+		})
+	} catch (error) {
+		throw new TRPCError({
+			code: 'PRECONDITION_FAILED',
+			message: error instanceof Error ? error.message : 'Unknown error',
+		})
+	}
 })

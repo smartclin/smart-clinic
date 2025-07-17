@@ -106,7 +106,7 @@ function StartOfWeekPicker() {
 				onValueChange={(value: WeekDay) => {
 					const weekStartsOn = weekDays.indexOf(value) + 1
 
-					setCalendarSettings(prev => ({
+					setCalendarSettings((prev) => ({
 						...prev,
 						weekStartsOn: weekStartsOn as 1 | 2 | 3 | 4 | 5 | 6 | 7,
 					}))
@@ -145,7 +145,7 @@ function TimeFormatPicker() {
 			</Label>
 			<Select
 				onValueChange={(value: string) => {
-					setCalendarSettings(prev => ({
+					setCalendarSettings((prev) => ({
 						...prev,
 						use12Hour: value === '12h',
 					}))

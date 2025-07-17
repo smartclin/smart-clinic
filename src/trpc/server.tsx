@@ -1,4 +1,4 @@
-'use server'
+import 'server-only'
 
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import { headers } from 'next/headers'
@@ -25,4 +25,7 @@ export const trpc = createTRPCOptionsProxy({
 })
 
 // 4. Direct server-side caller (for use in RSCs or route handlers)
-export const caller = cache(async () => appRouter.createCaller(await createContext()))
+export const caller = cache(async () => {
+	const ctx = await createContext()
+	return appRouter.createCaller(ctx)
+})

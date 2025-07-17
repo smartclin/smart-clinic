@@ -33,7 +33,7 @@ const buttonVariants = cva(
 	},
 )
 
-type ButtonProps =
+export type ButtonProps =
 	| (ButtonHTMLAttributes<HTMLButtonElement> &
 			VariantProps<typeof buttonVariants> & {
 				asChild?: false

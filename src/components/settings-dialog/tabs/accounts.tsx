@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { RouterOutputs } from '@/lib/trpc'
-import { useTRPC } from '@/lib/trpc/client'
+import type { RouterOutputs } from '@/trpc'
+import { useTRPC } from '@/trpc/client'
 
 import {
 	SettingsPage,
@@ -172,7 +172,7 @@ function AccountsList() {
 
 	return (
 		<ul className="flex flex-col gap-y-2">
-			{query.data.accounts.map(account => (
+			{query.data.accounts.map((account: Account )=> (
 				<React.Fragment key={account.id}>
 					<AccountListItem account={account} />
 					<Separator className="last:hidden" />
