@@ -1,20 +1,43 @@
-import { getSession } from '@/lib/auth' // Your Better-Auth instance
-import type { Roles } from '@/types/globals'
+// lib/auth-role.ts
 
-export const checkRole = async (role: Roles): Promise<boolean> => {
+import { getSession } from '@/auth' // your BetterAuth instance
+import type { UserRoles } from '@/types/globals'
+
+export const checkRole = async (role: UserRoles) => {
 	const session = await getSession()
 
-	// Assuming Better-Auth stores user metadata in session.user.publicMetadata
-	const userRole = session?.user?.role?.toLowerCase()
-
-	return userRole === role.toLowerCase()
+	return session?.user?.role?.toLowerCase() === role.toLowerCase()
 }
 
-export const getRole = async (): Promise<string> => {
+export const getRole = async (): Promise<UserRoles> => {
 	const session = await getSession()
 
-	// Default to "patient" if role is missing
-	const role = session?.user?.role?.toLowerCase() || 'patient'
+	const role = (session?.user?.role?.toLowerCase() as UserRoles) ?? 'patient'
 
 	return role
+}
+export const getUser = async () => {
+	const session = await getSession()
+
+	return session?.user ?? null
+}
+export const getUserId = async () => {
+	const session = await getSession()
+
+	return session?.user?.id ?? null
+}
+export const getUserEmail = async () => {
+	const session = await getSession()
+
+	return session?.user?.email ?? null
+}
+export const getUserName = async () => {
+	const session = await getSession()
+
+	return session?.user?.name ?? null
+}
+export const getUserRole = async () => {
+	const session = await getSession()
+
+	return session?.user?.role ?? null
 }

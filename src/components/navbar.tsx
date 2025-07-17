@@ -1,44 +1,60 @@
 'use client'
 
-import { UserButton } from '@daveyplate/better-auth-ui'
-import { Bell } from 'lucide-react'
+import { Bell, Home, UserCheck } from 'lucide-react' // add relevant icons
 import { usePathname } from 'next/navigation'
 
-import { useAuth } from '@/lib/auth/use-auth'
+import { useAuth } from '@/hooks/use-auth'
+
 
 export const Navbar = () => {
 	const user = useAuth()
 	const pathname = usePathname()
 
+	// Simplified format; focus on main route segment for clarity
 	function formatPathName(pathname: string | null): string {
-		if (!pathname) return 'Overview'
+		if (!pathname || pathname === '/') return 'Home'
 
-		const splitRoute = pathname.split('/')
-		const lastIndex = splitRoute.length - 1 > 2 ? 2 : splitRoute.length - 1
+		// Extract 1st or 2nd segments for top-level routing labels
+		const segments = pathname.toLowerCase().split('/').filter(Boolean)
+		const segment = segments[0] || 'Overview'
 
-		const pathName = splitRoute[lastIndex]
-
-		const formattedPath = pathName.replace(/-/g, ' ')
-
-		return formattedPath
+		// Capitalize and replace hyphens with spaces
+		return segment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 	}
 
-	const path = formatPathName(pathname)
+	const pathLabel = formatPathName(pathname)
 
 	return (
-		<div className="flex justify-between bg-white p-5">
-			<h1 className="font-medium text-gray-500 text-xl capitalize">{path || 'Overview'}</h1>
-
-			<div className="flex items-center gap-4">
-				<div className="relative">
-					<Bell />
-					<p className="-top-3 absolute right-1 size-4 rounded-full bg-red-600 text-center text-[10px] text-white">
-						2
-					</p>
-				</div>
-
-				{user.user?.id && <UserButton />}
+		<nav className="flex items-center justify-between bg-white px-6 py-4 shadow-md">
+			<div className="flex items-center gap-3">
+				<Home
+					aria-hidden="true"
+					className="h-8 w-8 text-primary-600"
+				/>
+				<h1 className="font-semibold text-primary-700 text-xl capitalize">{pathLabel}</h1>
 			</div>
-		</div>
+
+			<div className="flex items-center gap-6">
+				<button
+					aria-label="Notifications"
+					className="relative rounded-full p-2 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-600"
+					type="button"
+				>
+					<Bell className="h-6 w-6 text-primary-700" />
+					<span className="-top-1 -right-1 absolute flex h-5 w-5 items-center justify-center rounded-full bg-red-600 font-semibold text-white text-xs">
+						2
+					</span>
+				</button>
+
+				{user.user?.id ? (
+					<UserButton />
+				) : (
+					<UserCheck
+						aria-label="User not logged in"
+						className="h-8 w-8 text-primary-700"
+					/>
+				)}
+			</div>
+		</nav>
 	)
 }

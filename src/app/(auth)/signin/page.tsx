@@ -22,10 +22,10 @@ export default function SigninPage() {
 						<div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
 							<BabyIcon className="size-6" />
 						</div>
-						<span className='font-semibold text-lg tracking-tight'>PediaCare Clinic</span>
+						<span className="font-semibold text-lg tracking-tight">PediaCare Clinic</span>
 					</Link>
-					<h1 className='font-bold text-xl'>Sign in to your account</h1>
-					<p className='text-muted-foreground text-sm'>
+					<h1 className="font-bold text-xl">Sign in to your account</h1>
+					<p className="text-muted-foreground text-sm">
 						New here?{' '}
 						<Link
 							className="font-medium text-primary underline underline-offset-4 hover:opacity-80"
@@ -38,7 +38,7 @@ export default function SigninPage() {
 
 				<SigninForm />
 
-				<p className='text-center text-muted-foreground text-xs'>
+				<p className="text-center text-muted-foreground text-xs">
 					By continuing, you agree to our{' '}
 					<Link
 						className="underline hover:text-primary"

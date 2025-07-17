@@ -1,15 +1,12 @@
 'use server'
 
-// FIX: Add missing type imports for react-query prefetch options
 import type {
 	FetchInfiniteQueryOptions,
 	QueryKey,
 	UsePrefetchQueryOptions,
 } from '@tanstack/react-query'
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query'
-// NOTE: createTRPCOptionsProxy is not the standard way to set up tRPC for RSC.
-// The recommended import would be: import { createTRPCProxyClient } from '@trpc/react-query/server';
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query' // Keep existing import as per request
+import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import { headers } from 'next/headers'
 import { cache } from 'react'
 
@@ -18,36 +15,43 @@ import { createTRPCContext } from '@/server/api/trpc'
 import { createQueryClient } from '@/trpc/query-client'
 
 /**
- * This wraps the `createTRPCContext` helper and provides the required context
- * for the tRPC API when handling a tRPC call from a React Server Component.
+ * Caches and creates the tRPC context for server usage.
  */
 const createContext = cache(async () => {
-	// `headers()` is an async function, so `await` is correct here.
 	const heads = new Headers(await headers())
 	heads.set('x-trpc-source', 'rsc')
 
 	return createTRPCContext({ headers: heads })
 })
-
+export async function serverClient() {
+	const ctx = await createContext()
+	return appRouter.createCaller(ctx)
+}
+/**
+ * Cached query client instance for SSR hydration + prefetching.
+ */
 const getQueryClient = cache(createQueryClient)
 
-// NOTE: Using createTRPCOptionsProxy here is not typical for RSC proxy client.
-// The recommended approach involves `createTRPCProxyClient` and passes
-// createContext directly. This might not work as expected for direct
-// tRPC calls from RSCs for fetching data.
+/**
+ * Server-side tRPC proxy client with cached context and query client.
+ */
 export const trpc = createTRPCOptionsProxy<AppRouter>({
 	router: appRouter,
-	ctx: createContext, // Pass the context creator function
-	queryClient: getQueryClient, // This option might be ignored or used differently by createTRPCOptionsProxy
+	ctx: createContext,
+	queryClient: getQueryClient,
 })
 
+/**
+ * Wraps React children with TanStack HydrationBoundary for SSR.
+ */
 export function HydrateClient({ children }: { children: React.ReactNode }) {
 	const queryClient = getQueryClient()
-
 	return <HydrationBoundary state={dehydrate(queryClient)}>{children}</HydrationBoundary>
 }
 
-// This function now has its types correctly imported.
+/**
+ * Server-compatible prefetch helper for tRPC queries.
+ */
 export function prefetch(
 	queryOptions:
 		| UsePrefetchQueryOptions<unknown, Error, unknown, QueryKey>
@@ -55,17 +59,15 @@ export function prefetch(
 ) {
 	const queryClient = getQueryClient()
 
-	// Store the second part of the query key in a variable for clarity and type checking
-	const secondKeyPart = queryOptions.queryKey[1]
+	// Assumes your query keys are like ['routeName', { type: 'infinite' }]
+	const secondKey = queryOptions.queryKey[1]
+	const isInfinite =
+		typeof secondKey === 'object' &&
+		secondKey !== null &&
+		'type' in secondKey &&
+		(secondKey as string).type === 'infinite'
 
-	// FIX: Explicitly check if secondKeyPart is an object and not null
-	// before attempting to use the 'in' operator on it.
-	if (
-		typeof secondKeyPart === 'object' &&
-		secondKeyPart !== null &&
-		'infinite' in secondKeyPart &&
-		(secondKeyPart as { type?: string }).type === 'infinite' // Assert type for 'type' property
-	) {
+	if (isInfinite) {
 		void queryClient.prefetchInfiniteQuery(
 			queryOptions as FetchInfiniteQueryOptions<unknown, Error, unknown, QueryKey>,
 		)

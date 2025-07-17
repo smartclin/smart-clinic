@@ -1,4 +1,5 @@
 import type { Appointment } from '@prisma/client'
+import { AppointmentStatus } from '@prisma/client'
 import { format } from 'date-fns'
 import { BriefcaseBusiness } from 'lucide-react'
 
@@ -13,7 +14,6 @@ import { ViewAppointment } from '@/components/view-appointment'
 import { getSession } from '@/lib/auth'
 import { checkRole, getRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getPatientAppointments } from '@/utils/services/appointment'
 
 const columns = [
 	{ header: 'Info', key: 'name' },
@@ -29,7 +29,7 @@ type DataProps = Appointment & {
 		id: string
 		firstName: string
 		lastName: string
-		date_of_birth: Date
+		dateOfBirth: Date
 		gender: string
 		phone: string
 		img?: string | null
@@ -50,7 +50,7 @@ function getQueryId(
 	userId: string | undefined,
 ): string | undefined {
 	if (userRole === 'ADMIN') return id
-	if (userRole === 'DOCTOR' || userRole === 'NURSE') return id ?? userId
+	if (userRole === 'DOCTOR' || userRole === 'STAFF') return id ?? userId
 	if (userRole === 'PATIENT') return userId
 	return undefined
 }
@@ -111,7 +111,7 @@ const Appointments = async (props: {
 				</td>
 
 				<td className="hidden md:table-cell">
-					{format(new Date(item.appointment_date), 'yyyy-MM-dd')}
+					{format(new Date(item.appointmentDate), 'yyyy-MM-dd')}
 				</td>
 				<td className="hidden md:table-cell">{item.time}</td>
 
@@ -133,17 +133,17 @@ const Appointments = async (props: {
 				</td>
 
 				<td className="hidden xl:table-cell">
-					<AppointmentStatusIndicator status={item.status ?? 'N/A'} />
+					<AppointmentStatusIndicator status={item.status} />
 				</td>
 
 				<td>
 					<div className="flex items-center gap-2">
-						<ViewAppointment id={item?.id.toString()} />
+						<ViewAppointment id={item.id} />
 						<AppointmentActionOptions
 							appointmentId={item.id}
-							doctorId={item?.doctor_id}
-							patientId={item?.patient_id}
-							status={item?.status}
+							doctorId={item.doctorId}
+							patientId={item.patientId}
+							status={item.status}
 							userId={userId ?? 'N/A'}
 						/>
 					</div>

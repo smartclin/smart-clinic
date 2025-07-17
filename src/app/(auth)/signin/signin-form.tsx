@@ -99,7 +99,7 @@ export default function SigninForm() {
 									{...field}
 								/>
 							</FormControl>
-							<FormDescription className='flex items-center justify-between text-muted-foreground text-sm'>
+							<FormDescription className="flex items-center justify-between text-muted-foreground text-sm">
 								<Link
 									className="underline hover:text-primary"
 									href="/forgot-password"
@@ -126,7 +126,7 @@ export default function SigninForm() {
 				>
 					{isPending ? (
 						<div className="flex items-center gap-2">
-							<div className='size-3 animate-spin rounded-full border-white border-t-2' />
+							<div className="size-3 animate-spin rounded-full border-white border-t-2" />
 							Signing in...
 						</div>
 					) : (

@@ -2,6 +2,7 @@
 
 import type { Prisma } from '@prisma/client' // Import Prisma types for WhereInput and OrderByInput
 
+export * from './user'
 export interface SearchParamsProps {
 	searchParams?: Promise<{ [key: string]: string | undefined }>
 }

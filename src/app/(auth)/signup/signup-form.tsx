@@ -1,12 +1,11 @@
 'use client'
 
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -20,66 +19,70 @@ import {
 	FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { signUp } from '@/server/auth/auth-client'
+import { signUp } from '@/lib/auth/auth-client'
 
 export const signupSchema = z.object({
-	name: z.string().min(1, { error: 'Name is required.' }),
-	email: z.email({ error: 'Please enter a valid email.' }),
-	password: z.string().min(8, { error: 'The password must be at least 8 characters long.' }),
+	name: z.string().min(1, { message: 'Name is required.' }),
+	email: z.string().email({ message: 'Please enter a valid email.' }),
+	password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
 })
 
 export default function SignupForm() {
-	const [showPassword, setShowPassword] = useState<boolean>(false)
-	const [isPending, setIsPending] = useState<boolean>(false)
 	const router = useRouter()
+	const [showPassword, setShowPassword] = useState(false)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
-	const signupForm = useForm<z.infer<typeof signupSchema>>({
+	const form = useForm<z.infer<typeof signupSchema>>({
 		resolver: standardSchemaResolver(signupSchema),
 		defaultValues: {
-			email: '',
 			name: '',
+			email: '',
 			password: '',
 		},
 	})
 
 	async function onSubmit(values: z.infer<typeof signupSchema>) {
-		setIsPending(true)
-		await signUp
-			.email(
+		setIsSubmitting(true)
+
+		try {
+			await signUp.email(
 				{
-					email: values.email,
 					name: values.name,
+					email: values.email,
 					password: values.password,
 				},
 				{
 					onSuccess: () => {
-						toast.success('Signup successful', {
-							description: 'Redirecting to dashboard.',
+						toast.success('Account created', {
+							description: 'Welcome! Redirecting to your dashboard...',
 						})
 						router.replace('/dashboard')
 					},
 					onError: ({ error }) => {
-						toast.error('Signup failed.', { description: error.message })
+						toast.error('Signup failed', { description: error.message })
 					},
 				},
 			)
-			// eslint-disable-next-line @typescript-eslint/no-empty-function
-			.catch(_error => {})
-			.finally(() => setIsPending(false))
+		} catch (error) {
+			console.error('Unexpected error:', error)
+			toast.error('Unexpected error occurred.')
+		} finally {
+			setIsSubmitting(false)
+		}
 	}
 
 	return (
-		<Form {...signupForm}>
+		<Form {...form}>
 			<form
 				className="space-y-6"
-				onSubmit={signupForm.handleSubmit(onSubmit)}
+				onSubmit={form.handleSubmit(onSubmit)}
 			>
 				<FormField
-					control={signupForm.control}
+					control={form.control}
 					name="name"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Name</FormLabel>
+							<FormLabel>Full Name</FormLabel>
 							<FormControl>
 								<Input
 									placeholder="John Doe"
@@ -90,15 +93,17 @@ export default function SignupForm() {
 						</FormItem>
 					)}
 				/>
+
 				<FormField
-					control={signupForm.control}
+					control={form.control}
 					name="email"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Email</FormLabel>
+							<FormLabel>Email Address</FormLabel>
 							<FormControl>
 								<Input
-									placeholder="johndoe@axiom.app"
+									placeholder="johndoe@example.com"
+									type="email"
 									{...field}
 								/>
 							</FormControl>
@@ -106,47 +111,48 @@ export default function SignupForm() {
 						</FormItem>
 					)}
 				/>
+
 				<FormField
-					control={signupForm.control}
+					control={form.control}
 					name="password"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Password</FormLabel>
 							<FormControl>
 								<Input
-									placeholder="**********"
+									autoComplete="new-password"
+									placeholder="••••••••"
 									type={showPassword ? 'text' : 'password'}
 									{...field}
 								/>
 							</FormControl>
-							<FormDescription className="flex items-center justify-between">
-								<Button
-									className="p-0"
-									variant={'link'}
-								>
-									<Link href={'#'}>forgot password?</Link>
-								</Button>
-								<span className="flex gap-2">
+							<FormDescription className="flex items-center justify-between text-xs">
+								<label className="flex cursor-pointer items-center gap-2">
 									<Checkbox
-										onCheckedChange={() => setShowPassword(curr => !curr)}
-										value={showPassword ? 'on' : 'off'}
+										checked={showPassword}
+										onCheckedChange={checked => setShowPassword(!!checked)}
 									/>
-									<span>show password</span>
-								</span>
+									Show password <textarea />
+								</label>
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
 					)}
 				/>
+
 				<Button
 					className="w-full"
-					disabled={isPending}
+					disabled={isSubmitting}
 					type="submit"
 				>
-					{!!isPending && (
-						<div className="size-3 animate-spin rounded-full border-t-2 text-transparent">.</div>
+					{isSubmitting ? (
+						<span className="flex items-center justify-center gap-2">
+							<div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+							Creating account...
+						</span>
+					) : (
+						'Sign up'
 					)}
-					Sign in
 				</Button>
 			</form>
 		</Form>

@@ -119,10 +119,18 @@ export const useChatStream = () => {
 
 	const handleIncompleteStreamAndError = async (error: unknown): Promise<void> => {
 		if (errorType(error) !== 'AbortError') {
+			const errorMessage =
+				typeof error === 'object' &&
+				error !== null &&
+				'toString' in error &&
+				typeof (error as { toString: () => string }).toString === 'function'
+					? (error as { toString: () => string }).toString()
+					: String(error)
+
 			setChats(prevArray => [
 				...prevArray,
 				CustomMessageSchema.parse({
-					content: (error as any).toString(),
+					content: errorMessage,
 					role: ChatRole.SYSTEM,
 					provider: defaultProvider,
 				}),

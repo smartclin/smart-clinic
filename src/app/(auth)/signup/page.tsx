@@ -1,43 +1,61 @@
-import { GalleryVerticalEndIcon } from 'lucide-react'
+import { BabyIcon } from 'lucide-react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import SignupForm from '@/app/(auth)/signup/signup-form'
 
 export const metadata: Metadata = {
-	title: 'Signup | Axiom PM',
+	title: 'Sign Up | PediaCare Clinic',
+	description: 'Create your account to access the pediatric clinic portal.',
 }
 
 export default function SignupPage() {
 	return (
-		<main className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
-			<div className="flex w-full max-w-sm flex-col gap-6">
-				<div className="flex flex-col items-center gap-2">
-					<a
-						className="flex flex-col items-center gap-2 font-medium"
-						href="#"
+		<main className="flex min-h-screen flex-col items-center justify-center bg-muted px-6 py-12 md:py-20">
+			<section className="w-full max-w-sm space-y-6 rounded-xl bg-white p-8 shadow-lg dark:bg-background">
+				<header className="flex flex-col items-center gap-2 text-center">
+					<Link
+						aria-label="PediaCare Home"
+						className="flex flex-col items-center justify-center gap-1"
+						href="/"
 					>
-						<div className="flex size-8 items-center justify-center rounded-md">
-							<GalleryVerticalEndIcon className="size-6" />
+						<div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+							<BabyIcon className="size-6" />
 						</div>
-						<span className="sr-only">Acme Inc.</span>
-					</a>
-					<h1 className="font-bold text-xl">Welcome to Acme Inc.</h1>
-					<div className="text-center text-sm">
-						already have an account?{' '}
-						<a
-							className="underline underline-offset-4"
+						<span className="font-semibold text-lg tracking-tight">PediaCare Clinic</span>
+					</Link>
+					<h1 className="font-bold text-xl">Create your account</h1>
+					<p className="text-muted-foreground text-sm">
+						Already have an account?{' '}
+						<Link
+							className="font-medium text-primary underline underline-offset-4 hover:opacity-80"
 							href="/signin"
 						>
 							Sign in
-						</a>
-					</div>
-				</div>
+						</Link>
+					</p>
+				</header>
+
 				<SignupForm />
-				<div className="text-balance text-center text-muted-foreground text-xs *:[a]:underline *:[a]:underline-offset-4 *:[a]:hover:text-primary">
-					By clicking continue, you agree to our <a href="#">Terms of Service</a> and{' '}
-					<a href="#">Privacy Policy</a>.
-				</div>
-			</div>
+
+				<p className="text-center text-muted-foreground text-xs">
+					By continuing, you agree to our{' '}
+					<Link
+						className="underline hover:text-primary"
+						href="/terms"
+					>
+						Terms of Service
+					</Link>{' '}
+					and{' '}
+					<Link
+						className="underline hover:text-primary"
+						href="/privacy"
+					>
+						Privacy Policy
+					</Link>
+					.
+				</p>
+			</section>
 		</main>
 	)
 }
