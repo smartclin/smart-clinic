@@ -3,7 +3,7 @@
 import z, { treeifyError } from 'zod'
 
 import { auth, getSession } from '@/lib/auth'
-import { DoctorSchema, ServicesSchema, StaffSchema, WorkingDaysSchema } from '@/lib/schema'
+import { DoctorSchema, ServicesSchema, StaffSchema, workingDaySchema } from '@/lib/schema'
 import db from '@/server/db'
 import type { ServiceInput, StaffInput, WorkScheduleInput } from '@/types/data-types'
 import { generateRandomColor } from '@/utils'
@@ -66,7 +66,7 @@ export async function createNewDoctor(
 ) {
 	try {
 		const doctorResult = DoctorAuthSchema.safeParse(data)
-		const workScheduleResult = z.array(WorkingDaysSchema).safeParse(data.workSchedule)
+		const workScheduleResult = z.array(workingDaySchema).safeParse(data.workSchedule)
 
 		if (!doctorResult.success || !workScheduleResult.success) {
 			return {
@@ -106,9 +106,9 @@ export async function createNewDoctor(
 		})
 
 		// Create work schedule entries if provided
-		if (workSchedule.length > 0) {
+		if (Array.isArray(workSchedule) && workSchedule.length > 0) {
 			await Promise.all(
-				(workSchedule as WorkScheduleInput[]).map((ws: WorkScheduleInput) =>
+				workSchedule.map(ws =>
 					db.workingDays.create({
 						data: {
 							day: ws.day,

@@ -90,7 +90,7 @@ const UserButton = ({ setIsMobileNavOpen, className }: UserButtonProps) => {
 					>
 						{user?.role === 'admin' ? (
 							<ObfuscatedLink
-								className='!text-base cursor-default'
+								className="!text-base cursor-default"
 								href={{
 									pathname: '/admin/[adminId]/dashboard',
 									params: { adminId: user.id },
@@ -100,7 +100,7 @@ const UserButton = ({ setIsMobileNavOpen, className }: UserButtonProps) => {
 							</ObfuscatedLink>
 						) : user?.role === 'client' ? (
 							<ObfuscatedLink
-								className='!text-base cursor-default'
+								className="!text-base cursor-default"
 								href={{
 									pathname: '/client/[clientId]/dashboard',
 									params: { clientId: user.clientId?.toString() ?? '0' },
@@ -110,7 +110,7 @@ const UserButton = ({ setIsMobileNavOpen, className }: UserButtonProps) => {
 							</ObfuscatedLink>
 						) : (
 							<ObfuscatedLink
-								className='!text-base cursor-default'
+								className="!text-base cursor-default"
 								href={{
 									pathname: '/fournisseur/[fournisseurId]/dashboard',
 									params: {
@@ -131,13 +131,13 @@ const UserButton = ({ setIsMobileNavOpen, className }: UserButtonProps) => {
 						<p
 							className="!text-base"
 							onClick={handleSignOut}
-                            onKeyPress={handleKeyPress}
+							onKeyPress={handleKeyPress}
 						>
 							{t('deconnexion')}
 						</p>
 					) : (
 						<ObfuscatedLink
-							className='!text-base cursor-default'
+							className="!text-base cursor-default"
 							href="/auth/signin"
 						>
 							{t('connexion')}

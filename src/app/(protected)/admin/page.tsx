@@ -6,8 +6,8 @@ import { emptyAppointmentCounts, StatSummary } from '@/components/charts/stat-su
 import { StatCard } from '@/components/stat-card'
 import { RecentAppointments } from '@/components/tables/recent-appointment'
 import { Button } from '@/components/ui/button'
+import { caller } from '@/trpc/server'
 import type { AvailableDoctorProps } from '@/types/data-types'
-import { getAdminDashboardStats } from '@/utils/services/admin'
 
 const AdminDashboard = async () => {
 	const {
@@ -18,7 +18,7 @@ const AdminDashboard = async () => {
 		totalDoctors,
 		totalPatient,
 		totalAppointments,
-	} = await getAdminDashboardStats()
+	} = await (await caller()).admin.getAdminDashboardStats()
 
 	const cardData = [
 		{

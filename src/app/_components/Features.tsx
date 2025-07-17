@@ -55,7 +55,7 @@ export default function ClinicImageAndFeatures() {
 					whileInView={{ opacity: 1, y: 0 }}
 				>
 					<div className="relative">
-						<div className='absolute top-0 left-0 flex h-8 w-full items-center border-border border-b bg-muted px-4'>
+						<div className="absolute top-0 left-0 flex h-8 w-full items-center border-border border-b bg-muted px-4">
 							<div className="flex space-x-2">
 								<div className="h-3 w-3 rounded-full bg-red-400" />
 								<div className="h-3 w-3 rounded-full bg-yellow-400" />
@@ -82,7 +82,7 @@ export default function ClinicImageAndFeatures() {
 				{/* Floating background blob */}
 				<div className="absolute inset-0 overflow-hidden">
 					<FloatingAnimation
-						className='-translate-x-1/2 absolute bottom-1/4 left-1/3 transform'
+						className="-translate-x-1/2 absolute bottom-1/4 left-1/3 transform"
 						delay={0.8}
 						duration={6}
 					>
@@ -93,7 +93,7 @@ export default function ClinicImageAndFeatures() {
 				<div className="container relative mx-auto">
 					<div className="mb-16 text-center">
 						<motion.h2
-							className='mb-4 font-bold text-3xl text-foreground md:text-4xl'
+							className="mb-4 font-bold text-3xl text-foreground md:text-4xl"
 							initial={{ opacity: 0, y: 20 }}
 							transition={{ duration: 0.5 }}
 							viewport={{ once: true }}
@@ -102,7 +102,7 @@ export default function ClinicImageAndFeatures() {
 							Comprehensive Care & Management Features
 						</motion.h2>
 						<motion.p
-							className='mx-auto max-w-2xl text-muted-foreground text-xl'
+							className="mx-auto max-w-2xl text-muted-foreground text-xl"
 							initial={{ opacity: 0, y: 20 }}
 							transition={{ duration: 0.5, delay: 0.1 }}
 							viewport={{ once: true }}
@@ -132,7 +132,7 @@ export default function ClinicImageAndFeatures() {
 								<div className="mb-4 w-fit rounded-full bg-primary/10 p-3">
 									<feature.icon className="h-6 w-6 text-primary" />
 								</div>
-								<h3 className='mb-2 font-bold text-xl'>{feature.title}</h3>
+								<h3 className="mb-2 font-bold text-xl">{feature.title}</h3>
 								<p className="text-muted-foreground">{feature.description}</p>
 							</motion.div>
 						))}

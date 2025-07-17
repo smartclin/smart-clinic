@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-import authServer from '@/server/auth/auth'
+import authServer from '@/lib/auth'
 
 export default async function AuthenticationLayout({
 	children,

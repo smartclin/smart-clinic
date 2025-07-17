@@ -8,7 +8,11 @@ import { Button } from '@/components/ui/button'
 import { useSession } from '@/lib/auth/auth-client'
 import { api } from '@/trpc/react'
 
-export  default function Hero({ siteMetadata }: { siteMetadata: { name: string; description: string } }) {
+export default function Hero({
+	siteMetadata,
+}: {
+	siteMetadata: { name: string; description: string }
+}) {
 	const router = useRouter()
 	const { data: session, isPending } = useSession()
 	const healthStatus = api.healthCheck.useQuery()

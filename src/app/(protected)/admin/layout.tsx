@@ -3,15 +3,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
+import { getSession } from '@/lib/auth'
 import { cn } from '@/lib/utils'
-import { auth } from '@/server/auth'
 
 interface AdminLayoutProps {
 	children: React.ReactNode
 }
 
 export default async function AdminLayout({ children }: AdminLayoutProps) {
-	const session = await auth()
+	const session = await getSession()
 
 	// Redirect if not authenticated
 	if (!session?.user) {

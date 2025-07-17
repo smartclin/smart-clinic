@@ -19,10 +19,10 @@ export default async function HomePage() {
 		redirect(`/${role.toLowerCase()}`)
 	}
 
-	let apiHealthy = false
+	let _apiHealthy = false
 	try {
 		const status = await trpc.healthCheck.query()
-		apiHealthy = status.message === 'OK'
+		_apiHealthy = status.message === 'OK'
 	} catch (e) {
 		console.error('API health check failed:', e)
 	}

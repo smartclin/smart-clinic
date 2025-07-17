@@ -69,7 +69,7 @@ export function NavUser() {
 							<Avatar className="h-8 w-8 rounded-lg">
 								<AvatarImage
 									alt={user.name ?? ''}
-									src={user.image ?? ''}
+									src={user.avatar ?? ''}
 								/>
 								<AvatarFallback className="rounded-lg bg-accent-foreground text-background">
 									{initials}
@@ -94,7 +94,7 @@ export function NavUser() {
 								<Avatar className="h-8 w-8 rounded-lg">
 									<AvatarImage
 										alt={user.name ?? ''}
-										src={user.image ?? ''}
+										src={user.avatar ?? ''}
 									/>
 									<AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
 								</Avatar>

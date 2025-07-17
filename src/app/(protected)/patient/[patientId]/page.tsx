@@ -6,7 +6,7 @@ import { PatientRatingContainer } from '@/components/patient-rating-container'
 import { ProfileImage } from '@/components/profile-image'
 import { Card } from '@/components/ui/card'
 import { getSession } from '@/lib/auth'
-import { getPatientFullDataById } from '@/utils/services/patient'
+import { caller } from '@/trpc/server'
 
 interface ParamsProps {
 	params: Promise<{ patientId: string }>
@@ -89,7 +89,7 @@ const PatientProfile = async (props: ParamsProps) => {
 	const patientId = (await params).patientId
 	const cat = searchParams?.cat || 'medical-history'
 
-	const { data } = await getPatientFullDataById(id)
+	const { data } = await (await caller()).patient.getPatientFullDataById(id)
 
 	return (
 		<div className="flex h-full flex-col gap-6 rounded-xl bg-gray-100/60 px-3 py-6 lg:flex-row 2xl:p-6">
@@ -124,7 +124,7 @@ const PatientProfile = async (props: ParamsProps) => {
 							/>
 							<SmallCard
 								label="Date of Birth"
-								value={data?.date_of_birth ? format(data.date_of_birth, 'yyyy-MM-dd') : 'N/A'}
+								value={data?.dateOfBirth ? format(data.dateOfBirth, 'yyyy-MM-dd') : 'N/A'}
 							/>
 							<SmallCard
 								label={'Phone Number'}
@@ -135,11 +135,15 @@ const PatientProfile = async (props: ParamsProps) => {
 						<div className="flex flex-col gap-y-4 md:flex-row md:flex-wrap md:items-center md:gap-x-0 xl:justify-between">
 							<SmallCard
 								label="Marital Status"
-								value={data?.marital_status ?? 'single'}
+								value={data?.maritalStatus ?? 'single'}
+							/>
+							<SmallCard
+								label="Nutritional Status"
+								value={data?.nutritionalStatus ?? 'normal'}
 							/>
 							<SmallCard
 								label="Blood Group"
-								value={data?.blood_group ?? 'A'}
+								value={data?.bloodGroup ?? 'A'}
 							/>
 							<SmallCard
 								label="Address"
@@ -150,11 +154,11 @@ const PatientProfile = async (props: ParamsProps) => {
 						<div className="flex flex-col gap-y-4 md:flex-row md:flex-wrap md:items-center md:gap-x-0 xl:justify-between">
 							<SmallCard
 								label="Contact Person"
-								value={data?.emergency_contactName ?? 'N/A'}
+								value={data?.emergencyContactName ?? 'N/A'}
 							/>
 							<SmallCard
 								label="Emergency Contact"
-								value={data?.emergency_contact_number ?? '0000000000'}
+								value={data?.emergencyContactNumber ?? '0000000000'}
 							/>
 							<SmallCard
 								label="Last Visit"

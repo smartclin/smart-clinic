@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 
 import { useAuth } from '@/hooks/use-auth'
 
-
 export const Navbar = () => {
 	const user = useAuth()
 	const pathname = usePathname()

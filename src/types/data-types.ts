@@ -40,10 +40,10 @@ export type AvailableDoctorProps = {
 	specialization: string
 	img?: string
 	colorCode?: string
-	working_days: {
+	workingDays: {
 		day: string
-		start_time: string
-		close_time: string
+		startTime: string
+		closeTime: string
 	}[]
 }[]
 
@@ -66,7 +66,7 @@ export type PartialAppointment = {
 	id: number
 	appointmentDate: Date
 	time: string
-	status: AppointmentStatus
+	status: AppointmentStatus | null
 
 	patient: PartialPatient
 	doctor: PartialDoctor

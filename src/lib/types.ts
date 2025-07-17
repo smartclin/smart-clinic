@@ -309,9 +309,7 @@ export const ProviderSettingsSchema = z.object({
 	url: z
 		.string()
 		.regex(urlPattern, "URL must start with 'http://' or 'https://' followed by a domain name."),
-	apiType: z
-		.string({ required_error: 'Please select the api type.' })
-		.min(2, 'Please select the api type.'),
+	apiType: z.string({ error: 'Please select the api type.' }).min(2, 'Please select the api type.'),
 	apiKey: z
 		.union([z.string().min(5, 'API Key must be at least 5 characters long.'), z.literal('')])
 		.optional(),

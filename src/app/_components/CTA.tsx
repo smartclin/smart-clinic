@@ -24,7 +24,7 @@ export default function CallToAction() {
 
 				{/* Second animation, positioned differently */}
 				<FloatingAnimation
-					className='-translate-x-1/2 absolute bottom-1/4 left-1/5 transform'
+					className="-translate-x-1/2 absolute bottom-1/4 left-1/5 transform"
 					delay={1.2} // Further delayed
 					duration={7} // Even longer duration
 				>
@@ -61,7 +61,7 @@ export default function CallToAction() {
 					{/* Book Appointment Button */}
 					<Button
 						asChild
-						className='w-full bg-white text-primary-600 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 hover:text-primary-700 sm:w-auto'
+						className="w-full bg-white text-primary-600 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 hover:text-primary-700 sm:w-auto"
 						size="lg"
 					>
 						<Link href={appRoutes.scheduleAppointment}>
@@ -72,7 +72,7 @@ export default function CallToAction() {
 					{/* Contact Us Button */}
 					<Button
 						asChild
-						className='w-full border-white text-white shadow-lg transition-all hover:scale-105 hover:bg-white hover:text-primary-600 sm:w-auto'
+						className="w-full border-white text-white shadow-lg transition-all hover:scale-105 hover:bg-white hover:text-primary-600 sm:w-auto"
 						size="lg"
 						variant="outline"
 					>

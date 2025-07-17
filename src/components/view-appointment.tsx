@@ -1,10 +1,11 @@
+import type { AppointmentStatus } from '@prisma/client'
 import { format } from 'date-fns'
 import { Calendar, Phone } from 'lucide-react'
 
 import { getSession } from '@/lib/auth'
+import { caller } from '@/trpc/server'
 import { calculateAge, formatDateTime } from '@/utils'
 import { checkRole } from '@/utils/roles'
-import { getAppointmentById } from '@/utils/services/appointment'
 
 import { AppointmentAction } from './appointment-action'
 import { AppointmentStatusIndicator } from './appointment-status-indicator'
@@ -19,13 +20,16 @@ import {
 	DialogTrigger,
 } from './ui/dialog'
 
-export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
-	const response = await getAppointmentById(Number(id ?? 0))
+interface ViewAppointmentProps {
+	id?: number
+}
+export const ViewAppointment = async ({ id }: ViewAppointmentProps) => {
+	if (!id) return null
 	const session = await getSession()
+	if (!session) return null
 	const userId = session?.user.id
-
-	if (!('data' in response)) return null
-	const { data } = response
+	const data = await (await caller()).appointment.getAppointmentById(id)
+	if (!data) return null
 
 	return (
 		<Dialog>
@@ -42,15 +46,16 @@ export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
 				<DialogHeader>
 					<DialogTitle>Patient Appointment</DialogTitle>
 					<DialogDescription>
-						This appointment was booked on the {formatDateTime(data?.createdAt.toString())}
+						This appointment was booked on the{' '}
+						{formatDateTime(data?.data?.createdAt?.toString() ?? '')}
 					</DialogDescription>
 				</DialogHeader>
 
-				{data?.status === 'CANCELLED' && (
+				{data?.data?.status === 'CANCELLED' && (
 					<div className="mt-4 rounded-md bg-yellow-100 p-4">
 						<span className="font-semibold text-sm">This appointment has been cancelled</span>
 						<p className="text-sm">
-							<strong>Reason</strong>: {data?.reason}
+							<strong>Reason</strong>: {data?.data?.reason}
 						</p>
 					</div>
 				)}
@@ -64,14 +69,14 @@ export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
 						<div className="flex w-full gap-1 md:w-1/2">
 							<ProfileImage
 								className="size-20 bg-blue-500"
-								name={`${data?.patient?.firstName} ${data?.patient?.lastName}`}
+								name={`${data?.data?.patient?.firstName} ${data?.data?.patient?.lastName}`}
 								textClassName="text-2xl"
-								url={data?.patient?.img ?? ''}
+								url={data?.data?.patient?.img ?? ''}
 							/>
 
 							<div className="space-y-0.5">
 								<h2 className="font-semibold text-lg uppercase md:text-xl">
-									{`${data?.patient?.firstName} ${data?.patient?.lastName}`}
+									{`${data?.data?.patient?.firstName} ${data?.data?.patient?.lastName}`}
 								</h2>
 
 								<p className="flex items-center gap-2 text-gray-600">
@@ -79,7 +84,7 @@ export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
 										className="text-gray-500"
 										size={20}
 									/>
-									{calculateAge(data?.patient?.dateOfBirth)}
+									{calculateAge(data?.data?.patient?.dateOfBirth ?? new Date())}
 								</p>
 
 								<span className="flex items-center gap-2 text-sm">
@@ -87,14 +92,14 @@ export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
 										className="text-gray-500"
 										size={16}
 									/>
-									{data?.patient?.phone}
+									{data?.data?.patient?.phone}
 								</span>
 							</div>
 						</div>
 
 						<div>
 							<span className="text-gray-500 text-sm">Address</span>
-							<p className="text-gray-600 capitalize">{data?.patient?.address}</p>
+							<p className="text-gray-600 capitalize">{data?.data?.patient?.address}</p>
 						</div>
 					</div>
 
@@ -106,23 +111,27 @@ export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
 						<div>
 							<span className="text-gray-500 text-sm">Date</span>
 							<p className="text-gray-600 text-sm">
-								{format(data?.appointmentDate, 'MMM dd, yyyy')}
+								{data?.data?.appointmentDate
+									? format(data.data.appointmentDate, 'MMM dd, yyyy')
+									: 'N/A'}
 							</p>
 						</div>
 						<div>
 							<span className="text-gray-500 text-sm">Time</span>
-							<p>{data?.time}</p>
+							<p className="text-gray-600 text-sm">
+								{data?.data?.time ? format(data.data.time, 'hh:mm a') : 'N/A'}
+							</p>
 						</div>
 						<div>
 							<span className="text-gray-500 text-sm">Status</span>
-							<AppointmentStatusIndicator status={data?.status} />
+							<AppointmentStatusIndicator status={data?.data?.status as AppointmentStatus} />
 						</div>
 					</div>
 
-					{data?.note && (
+					{data?.data?.note && (
 						<div>
 							<span className="text-gray-500 text-sm">Note from Patient</span>
-							<p>{data?.note}</p>
+							<p>{data?.data?.note}</p>
 						</div>
 					)}
 
@@ -133,30 +142,30 @@ export const ViewAppointment = async ({ id }: { id: number | undefined }) => {
 						<div className="flex gap-3">
 							<ProfileImage
 								className="bg-emerald-600 xl:size-20"
-								name={data?.doctor?.name}
+								name={data?.data?.doctor?.name ?? ''}
 								textClassName="xl:text-2xl"
-								url={data?.doctor?.img ?? ''}
+								url={data?.data?.doctor?.img ?? ''}
 							/>
 							<div className="">
-								<h2 className="font-medium text-lg uppercase">{data?.doctor?.name}</h2>
+								<h2 className="font-medium text-lg uppercase">{data?.data?.doctor?.name}</h2>
 								<p className="flex items-center gap-2 text-gray-600 capitalize">
-									{data?.doctor?.specialization}
+									{data?.data?.doctor?.specialization}
 								</p>
 							</div>
 						</div>
 					</div>
 
-					{((await checkRole('ADMIN')) || data?.doctorId === userId) && (
+					{(await checkRole('ADMIN')) || data?.data?.doctorId === userId ? (
 						<>
 							<p className="mt-4 w-fit rounded bg-blue-100 px-2 py-1 text-blue-600 text-xs md:text-sm">
 								Perform Action
 							</p>
 							<AppointmentAction
-								id={data.id}
-								status={data?.status}
+								id={data.data?.id ?? ''}
+								status={data?.data?.status ?? ''}
 							/>
 						</>
-					)}
+					) : null}
 				</div>
 			</DialogContent>
 		</Dialog>

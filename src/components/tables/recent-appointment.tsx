@@ -79,7 +79,7 @@ export const RecentAppointments = ({ data }: DataProps) => {
 				</td>
 
 				<td className="hidden xl:table-cell">
-					<AppointmentStatusIndicator status={item?.status} />
+					<AppointmentStatusIndicator status={item?.status ?? 'PENDING'} />
 				</td>
 
 				<td>

@@ -29,7 +29,7 @@ export const patientRouter = createTRPCRouter({
 
 	getPatientById: protectedProcedure.input(z.string()).query(async ({ input: id }) => {
 		try {
-			return await getPatientById(id)
+			return (await getPatientById(id)).data
 		} catch (error) {
 			console.error('Get Patient Error:', error)
 			throw new TRPCError({

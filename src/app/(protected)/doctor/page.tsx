@@ -1,4 +1,3 @@
-import { currentUser } from '@clerk/nextjs/server'
 import { BriefcaseBusiness, BriefcaseMedical, User, Users } from 'lucide-react'
 import Link from 'next/link'
 
@@ -8,13 +7,14 @@ import { emptyAppointmentCounts, StatSummary } from '@/components/charts/stat-su
 import { StatCard } from '@/components/stat-card'
 import { RecentAppointments } from '@/components/tables/recent-appointment'
 import { Button } from '@/components/ui/button'
+import { getSession } from '@/lib/auth'
+import { caller } from '@/trpc/server'
 import type { AvailableDoctorProps } from '@/types/data-types'
-import { getAvailableDoctors, getDoctorDashboardStats } from '@/utils/services/doctor'
 
 const DoctorDashboard = async () => {
-	const user = await currentUser()
-
-	const rawAvailableDoctors = await getAvailableDoctors()
+	const session = await getSession()
+	const user = session?.user
+	const rawAvailableDoctors = await (await caller()).doctor.getAvailableDoctors()
 
 	let availableDoctors: AvailableDoctorProps = []
 
@@ -25,10 +25,10 @@ const DoctorDashboard = async () => {
 			specialization: doc.specialization,
 			img: doc.img ?? undefined,
 			colorCode: doc.colorCode ?? undefined,
-			working_days: doc.working_days.map(day => ({
+			workingDays: doc.workingDays.map(day => ({
 				day: day.day,
-				start_time: day.start_time,
-				close_time: day.close_time,
+				startTime: day.startTime,
+				closeTime: day.closeTime,
 			})),
 		}))
 	}
@@ -40,7 +40,7 @@ const DoctorDashboard = async () => {
 		appointmentCounts,
 		monthlyData,
 		last5Records,
-	} = await getDoctorDashboardStats()
+	} = await (await caller()).doctor.getDoctorDashboardStats()
 
 	const cardData = [
 		{

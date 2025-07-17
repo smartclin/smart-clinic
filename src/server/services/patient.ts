@@ -153,6 +153,11 @@ interface PatientFullData {
 	id: string
 	firstName: string
 	lastName: string
+	emergencyContactName: string | null
+	emergencyContactNumber: string | null
+	maritalStatus: string | null
+	nutritionalStatus: string | null
+	bloodGroup: string | null
 	email: string | null
 	phone: string | null
 	address: string | null

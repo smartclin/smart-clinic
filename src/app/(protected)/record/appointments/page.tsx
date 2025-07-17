@@ -1,5 +1,4 @@
 import type { Appointment } from '@prisma/client'
-import { AppointmentStatus } from '@prisma/client'
 import { format } from 'date-fns'
 import { BriefcaseBusiness } from 'lucide-react'
 

@@ -3,7 +3,8 @@
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 
-import { cn, formatNumber } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatNumber } from '@/utils'
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 

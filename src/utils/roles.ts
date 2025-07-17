@@ -1,7 +1,8 @@
 // lib/auth-role.ts
 
-import { getSession } from '@/auth' // your BetterAuth instance
-import type { UserRoles } from '@/types/globals'
+import { getSession } from '@/lib/auth' // your BetterAuth instance
+// This ensures that only valid role strings are used.
+export type UserRoles = 'ADMIN' | 'PATIENT' | 'STAFF' | 'DOCTOR'
 
 export const checkRole = async (role: UserRoles) => {
 	const session = await getSession()
