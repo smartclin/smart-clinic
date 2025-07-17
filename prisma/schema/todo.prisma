@@ -1,0 +1,124 @@
+model Todo {
+  id        Int     @id @default(autoincrement())
+  text      String
+  completed Boolean @default(false)
+
+  @@map("todo")
+}
+
+view PatientDetailsView {
+  id          String   @unique
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  dateOfBirth DateTime @map("dateOfBirth")
+  gender      Gender
+  address     String?
+  status      Status? // Assuming a status field might be useful from User or Staff for patient if applicable
+}
+
+view DoctorAvailabilityView {
+  doctorId       String    @unique @map("doctorId")
+  firstName      String
+  lastName       String
+  specialization String
+  dayOfWeek      String?   @map("dayOfWeek")
+  startTime      DateTime? @map("startTime") @db.Time
+  endTime        DateTime? @map("endTime") @db.Time
+}
+
+view UpcomingAppointmentsView {
+  appointmentId    Int               @unique @map("appointmentId")
+  appointmentDate  DateTime          @map("appointmentDate")
+  appointmentTime  DateTime          @map("appointmentTime")
+  status           AppointmentStatus
+  reason           String?
+  patientFirstName String            @map("patientFirstName")
+  patientLastName  String            @map("patientLastName")
+  patientPhone     String?           @map("patientPhone")
+  doctorFirstName  String            @map("doctorFirstName")
+  doctorLastName   String            @map("doctorLastName")
+  specialization   String
+}
+
+view RecentMedicalRecordsView {
+  medicalRecordId  Int      @unique @map("medicalRecordId")
+  recordDate       DateTime @map("recordDate")
+  patientFirstName String   @map("patientFirstName")
+  patientLastName  String   @map("patientLastName")
+  doctorFirstName  String   @map("doctorFirstName")
+  doctorLastName   String   @map("doctorLastName")
+  chiefComplaint   String?  @map("chiefComplaint")
+  treatmentPlan    String?  @map("treatmentPlan")
+}
+
+view PatientPaymentsSummaryView {
+  patientId          String        @unique @map("patientId") // Composite unique if needed, or adjust primary key
+  firstName          String
+  lastName           String
+  totalBilled        Float?        @map("totalBilled")
+  totalPaid          Float?        @map("totalPaid")
+  outstandingBalance Float?        @map("outstandingBalance")
+  paymentStatus      PaymentStatus @map("paymentStatus")
+
+  @@unique([patientId, paymentStatus]) // Example composite unique if same patient can have multiple statuses in view
+}
+
+view ServiceUsageView {
+  serviceId    Int              @unique @map("serviceId")
+  serviceName  String           @map("serviceName")
+  category     ServiceCategory?
+  timesUsed    BigInt           @map("timesUsed") // Use BigInt for counts
+  totalRevenue Float?           @map("totalRevenue")
+}
+
+view StaffOverviewView {
+  staffId    String    @unique @map("staffId")
+  firstName  String
+  lastName   String
+  email      String
+  phone      String?
+  role       Role
+  department String?
+  status     Status
+  hireDate   DateTime? @map("hireDate")
+}
+
+view AllUsersView {
+  userId    String  @unique @map("userId")
+  email     String
+  role      Role
+  firstName String? @map("firstName")
+  lastName  String? @map("lastName")
+  phone     String?
+}
+
+view OverduePaymentsView {
+  paymentId        Int           @unique @map("paymentId")
+  receiptNumber    String        @map("receiptNumber")
+  billDate         DateTime      @map("billDate")
+  totalAmount      Float
+  amountPaid       Float
+  amountDue        Float?        @map("amountDue")
+  patientFirstName String        @map("patientFirstName")
+  patientLastName  String        @map("patientLastName")
+  patientEmail     String        @map("patientEmail")
+  status           PaymentStatus
+}
+
+view PrescriptionDetailsView {
+  prescriptionId   Int       @unique @map("prescriptionId")
+  medicationName   String    @map("medicationName")
+  dosage           String
+  frequency        String
+  duration         String
+  issuedDate       DateTime  @map("issuedDate")
+  endDate          DateTime? @map("endDate")
+  status           String?
+  patientFirstName String    @map("patientFirstName")
+  patientLastName  String    @map("patientLastName")
+  doctorFirstName  String    @map("doctorFirstName")
+  doctorLastName   String    @map("doctorLastName")
+  chiefComplaint   String?   @map("chiefComplaint")
+}
