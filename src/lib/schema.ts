@@ -138,6 +138,40 @@ export const StaffAuthSchema = z.object({
 	status: z.enum(['ACTIVE', 'INACTIVE', 'DORMANT']).optional(),
 	password: z.string().min(6, 'Password should be at least 6 characters long'),
 })
+
+// Refined Success Response
+export const CreateStaffSuccessResponse = z.object({
+	success: z.literal(true), // This means 'success' must be true
+	msg: z.string(),
+	message: z.string().optional(), // Server might sometimes send 'message' even on success
+	errors: z.boolean().optional(), // Account for 'errors' if it might be present
+	error: z.boolean().optional(), // Account for 'error' if it might be present
+})
+
+// Refined Error Response
+export const CreateStaffErrorResponse = z.object({
+	success: z.literal(false), // This means 'success' must be false
+	message: z.string(),
+	msg: z.string().optional(), // Server might sometimes send 'msg' even on error
+	errors: z.boolean().optional(), // Account for 'errors' if it might be present
+	error: z.boolean().optional(), // Account for 'error' if it might be present
+})
+
+// Union of all possible outcomes
+export const CreateStaffOutputSchema = z.union([
+	CreateStaffSuccessResponse,
+	CreateStaffErrorResponse,
+	// If there's another "error" shape from the server (e.g., from auth.api.createUser direct error), add it here
+	// For example, an object that might come directly from auth.api.createUser:
+	z.object({
+		success: z.boolean(), // Here, success might be a plain boolean
+		message: z.string(),
+		errors: z.boolean().optional(),
+		error: z.boolean().optional(),
+		msg: z.string().optional(),
+	}),
+])
+
 export const VitalSignsSchema = z.object({
 	patientId: z.string(),
 	medicalId: z.number(),

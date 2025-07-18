@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
-import { SettingsDialog } from '@/components/settings-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
 	DropdownMenu,
@@ -108,12 +107,10 @@ export function NavUser() {
 						<DropdownMenuSeparator />
 
 						<DropdownMenuGroup>
-							<SettingsDialog>
-								<DropdownMenuItem onSelect={e => e.preventDefault()}>
-									<Settings className="mr-2 h-4 w-4" />
-									Settings
-								</DropdownMenuItem>
-							</SettingsDialog>
+							<DropdownMenuItem onSelect={e => e.preventDefault()}>
+								<Settings className="mr-2 h-4 w-4" />
+								Settings
+							</DropdownMenuItem>
 						</DropdownMenuGroup>
 
 						<DropdownMenuSeparator />

@@ -68,6 +68,7 @@
 		"@trpc/react-query": "^11.4.3",
 		"@trpc/server": "^11.4.3",
 		"@trpc/tanstack-react-query": "^11.4.3",
+		"bcryptjs": "3.0.2",
 		"better-auth": "^1.2.12",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",

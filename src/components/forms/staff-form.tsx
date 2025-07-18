@@ -1,63 +1,61 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { TRPCClientErrorLike } from '@trpc/client'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 
-import { createNewStaff } from '@/app/actions/admin'
-import { StaffSchema } from '@/lib/schema'
+import { type CreateStaffOutputSchema, StaffSchema } from '@/lib/schema'
+import type { AppRouter } from '@/server/api/root'
+import { trpc } from '@/trpc/react'
 
 import { CustomInput } from '../custom-input'
 import { Button } from '../ui/button'
 import { Form } from '../ui/form'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet'
 
-const TYPES = [
-	{ label: 'Nurse', value: 'NURSE' },
-	{ label: 'Laboratory', value: 'LAB_TECHNICIAN' },
-]
+const TYPES = [{ label: 'Nurse', value: 'NURSE' }]
 
 export const StaffForm = () => {
-	const [isLoading, setIsLoading] = useState(false)
 	const router = useRouter()
 
-	const form = useForm<z.infer<typeof StaffSchema>>({
-		resolver: zodResolver(StaffSchema),
-		defaultValues: {
-			name: '',
-			email: '',
-			phone: '',
-			role: 'NURSE',
-			address: '',
-			department: '',
-			img: '',
-			password: '',
-			licenseNumber: '',
-		},
-	})
+
+	// Infer the types for the mutation's success and error callbacks
+	type CreateNewStaffOutput = z.infer<typeof CreateStaffOutputSchema>
+
+	type CreateNewStaffError = TRPCClientErrorLike<AppRouter>
+
+	const { mutateAsync: createStaffMutation, isPending: isSubmitting } =
+		trpc.admin.createNewStaff.useMutation({
+			// <-- Revert to createNewStaff as per your router
+			onSuccess: (res: CreateNewStaffOutput) => {
+				// Now 'res' will have the correct type, and type guards can be used
+				// You might need to refine these checks based on the exact final shape
+				// from the server, especially if 'success' can be a generic boolean from other parts.
+				if (res.success) {
+					// This check should now be type-safe
+					toast.success(res.msg || res.message || 'Staff added successfully!')
+					form.reset()
+					router.refresh()
+				} else {
+					toast.error(res.message || res.msg || 'Failed to add staff.')
+				}
+			},
+			onError: (error: CreateNewStaffError) => {
+				console.error('Error adding staff:', error)
+				toast.error(error.message || 'Something went wrong. Try again later.')
+			},
+		})
 
 	const handleSubmit = async (values: z.infer<typeof StaffSchema>) => {
 		try {
-			setIsLoading(true)
-			const resp = await createNewStaff(values)
-
-			if (resp.success) {
-				toast.success('Staff added successfully!')
-
-				form.reset()
-				router.refresh()
-			} else if (resp.error) {
-				toast.error(resp.message)
-			}
+			await createStaffMutation(values)
 		} catch (error) {
-			console.log(error)
-			toast.error('Something went wrong')
-		} finally {
-			setIsLoading(false)
+			console.error('Unexpected error during staff submission:', error)
+			toast.error('An unexpected error occurred during submission. Please try again.')
 		}
 	}
 
@@ -83,7 +81,6 @@ export const StaffForm = () => {
 						>
 							<CustomInput
 								control={form.control}
-								defaultValue="NURSE"
 								label="Type"
 								name="role"
 								placeholder=""
@@ -151,10 +148,10 @@ export const StaffForm = () => {
 
 							<Button
 								className="w-full"
-								disabled={isLoading}
+								disabled={isSubmitting}
 								type="submit"
 							>
-								Submit
+								{isSubmitting ? 'Submitting...' : 'Submit'}
 							</Button>
 						</form>
 					</Form>
