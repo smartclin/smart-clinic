@@ -9,11 +9,11 @@ import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
 import { Button } from '@/components/ui/button'
+import { api } from '@/trpc/server'
 import type { SearchParamsProps } from '@/types'
 import { calculateAge } from '@/utils'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getAllPatients } from '@/utils/services/patient'
 
 const columns = [
 	{
@@ -59,8 +59,8 @@ const columns = [
 interface PatientProps extends Patient {
 	appointments: {
 		medical: {
-			created_at: Date
-			treatment_plan: string
+			createdAt: Date
+			treatmentPlan: string | null
 		}[]
 	}[]
 }
@@ -69,7 +69,7 @@ const PatientList = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
-	const { data, totalPages, totalRecords, currentPage } = await getAllPatients({
+	const { data, totalPages, totalRecords, currentPage } = await api.patient.getAllPatients({
 		page,
 		search: searchQuery,
 	})
@@ -96,7 +96,7 @@ const PatientList = async (props: SearchParamsProps) => {
 					/>
 					<div>
 						<h3 className="uppercase">{name}</h3>
-						<span className="text-sm capitalize">{calculateAge(item?.date_of_birth)}</span>
+						<span className="text-sm capitalize">{calculateAge(item?.dateOfBirth)}</span>
 					</div>
 				</td>
 				<td className="hidden md:table-cell">{item?.gender}</td>
@@ -105,14 +105,14 @@ const PatientList = async (props: SearchParamsProps) => {
 				<td className="hidden xl:table-cell">{item?.address}</td>
 				<td className="hidden xl:table-cell">
 					{lastVisit ? (
-						format(lastVisit?.created_at, 'yyyy-MM-dd HH:mm:ss')
+						format(lastVisit?.createdAt, 'yyyy-MM-dd HH:mm:ss')
 					) : (
 						<span className="text-gray-400 italic">No last visit</span>
 					)}
 				</td>
 				<td className="hidden xl:table-cell">
 					{lastVisit ? (
-						lastVisit?.treatment_plan
+						lastVisit?.treatmentPlan
 					) : (
 						<span className="text-gray-400 italic">No last treatment</span>
 					)}

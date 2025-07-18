@@ -9,11 +9,11 @@ import { availableDays } from '@/components/available-doctor'
 import { ProfileImage } from '@/components/profile-image'
 import { RatingContainer } from '@/components/rating-container'
 import { RecentAppointments } from '@/components/tables/recent-appointment'
-import { getDoctorById } from '@/utils/services/doctor'
+import { api } from '@/trpc/server'
 
 const DoctorProfile = async (props: { params: Promise<{ id: string }> }) => {
 	const params = await props.params
-	const { data, totalAppointment } = await getDoctorById(params?.id)
+	const { data, totalAppointment } = await api.doctor.getDoctorById(params?.id)
 
 	if (!data) return null
 
@@ -39,7 +39,7 @@ const DoctorProfile = async (props: { params: Promise<{ id: string }> }) => {
 							<div className="mt-4 flex flex-wrap items-center justify-between gap-2 font-medium text-sm">
 								<div className="flex w-full text-base">
 									<span>License #:</span>
-									<p className="font-semibold">{data?.license_number}</p>
+									<p className="font-semibold">{data?.licenseNumber}</p>
 								</div>
 
 								<div className="flex w-full items-center gap-2 md:w-1/3 lg:w-full 2xl:w-1/3">
@@ -74,7 +74,7 @@ const DoctorProfile = async (props: { params: Promise<{ id: string }> }) => {
 						<div className="doctorCard">
 							<FaCalendarDays className="size-5" />
 							<div>
-								<h1 className="font-serif text-xl">{data?.working_days?.length}</h1>
+								<h1 className="font-serif text-xl">{data?.workingDays?.length}</h1>
 								<span className="text-gray-500 text-sm">Working Days</span>
 							</div>
 						</div>
@@ -82,14 +82,14 @@ const DoctorProfile = async (props: { params: Promise<{ id: string }> }) => {
 						<div className="doctorCard">
 							<IoTimeSharp className="size-5" />
 							<div>
-								<h1 className="font-serif text-xl">{availableDays({ data: data.working_days })}</h1>
+								<h1 className="font-serif text-xl">{availableDays({ data: data.workingDays })}</h1>
 								<span className="text-gray-500 text-sm">Working Hours</span>
 							</div>
 						</div>
 						<div className="doctorCard">
 							<BsCalendarDateFill className="size-5" />
 							<div>
-								<h1 className="font-serif text-xl">{format(data?.created_at, 'yyyy-MM-dd')}</h1>
+								<h1 className="font-serif text-xl">{format(data?.createdAt, 'yyyy-MM-dd')}</h1>
 								<span className="text-gray-500 text-sm">Joined Date</span>
 							</div>
 						</div>

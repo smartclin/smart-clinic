@@ -7,10 +7,10 @@ import { Pagination } from '@/components/pagination'
 import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
+import { api } from '@/trpc/server'
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getMedicalRecords } from '@/utils/services/medical-record'
 
 const columns = [
 	{
@@ -53,12 +53,12 @@ interface ExtendedProps extends MedicalRecords {
 		img: string | null
 		firstName: string
 		lastName: string
-		date_of_birth: Date
+		dateOfBirth: Date
 		gender: string
 		colorCode: string | null
 	}
 	diagnosis: Diagnosis[]
-	lab_test: LabTest[]
+	labTest: LabTest[]
 }
 
 const MedicalRecordsPage = async (props: SearchParamsProps) => {
@@ -66,11 +66,11 @@ const MedicalRecordsPage = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
-	const { data, totalPages, totalRecords, currentPage } = await getMedicalRecords({
-		page,
-		search: searchQuery,
-	})
-	const _isAdmin = await checkRole('ADMIN')
+	const { data, totalPages, totalRecords, currentPage } =
+		await api.medicalRecords.getMedicalRecords({
+			page,
+			search: searchQuery,
+		})
 
 	if (!data) return null
 
@@ -95,8 +95,8 @@ const MedicalRecordsPage = async (props: SearchParamsProps) => {
 						<span className="text-sm capitalize">{patient?.gender}</span>
 					</div>
 				</td>
-				<td className="hidden md:table-cell">{format(item?.created_at, 'yyyy-MM-dd HH:mm:ss')}</td>
-				<td className="hidden 2xl:table-cell">{item?.doctor_id}</td>
+				<td className="hidden md:table-cell">{format(item?.createdAt, 'yyyy-MM-dd HH:mm:ss')}</td>
+				<td className="hidden 2xl:table-cell">{item?.doctorId}</td>
 				<td className="hidden lg:table-cell">
 					{item?.diagnosis?.length === 0 ? (
 						<span className="text-gray-400 italic">No diagnosis found</span>
@@ -105,15 +105,15 @@ const MedicalRecordsPage = async (props: SearchParamsProps) => {
 					)}
 				</td>
 				<td className="hidden xl:table-cell">
-					{item?.lab_test?.length === 0 ? (
+					{item?.labTest?.length === 0 ? (
 						<span className="text-gray-400 italic">No lab found</span>
 					) : (
-						<span>{item?.lab_test.length}</span>
+						<span>{item?.labTest.length}</span>
 					)}
 				</td>
 
 				<td>
-					<ViewAction href={`/appointments/${item?.appointment_id}`} />
+					<ViewAction href={`/appointments/${item?.appointmentId}`} />
 				</td>
 			</tr>
 		)

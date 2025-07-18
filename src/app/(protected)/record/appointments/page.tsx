@@ -11,6 +11,7 @@ import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
 import { ViewAppointment } from '@/components/view-appointment'
 import { getSession } from '@/lib/auth'
+import { api } from '@/trpc/server'
 import { checkRole, getRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
 
@@ -24,13 +25,18 @@ const columns = [
 ]
 
 type DataProps = Appointment & {
+	createdAt: Date
+	updatedAt: Date
+	serviceId: number | null
+	note: string | null
+	reason: string | null
 	patient?: {
 		id: string
 		firstName: string
 		lastName: string
 		dateOfBirth: Date
 		gender: string
-		phone: string
+		phone: string | null
 		img?: string | null
 		colorCode?: string | null
 	}
@@ -54,11 +60,12 @@ function getQueryId(
 	return undefined
 }
 
-const Appointments = async (props: {
-	searchParams?: Promise<{ [key: string]: string | undefined }>
+const Appointments = async ({
+	searchParams,
+}: {
+	searchParams?: { [key: string]: string | undefined }
 }) => {
-	const searchParams = await props.searchParams
-	const session = await getSession()
+ 	const session = await getSession()
 	const userId = session?.user.id
 	const userRole = await getRole()
 	const isPatient = await checkRole('PATIENT')
@@ -69,7 +76,7 @@ const Appointments = async (props: {
 
 	const queryId = getQueryId(userRole, id, userId)
 
-	const appointmentsResponse = await getPatientAppointments({
+	const appointmentsResponse = await api.appointment.getPatientAppointments({
 		page,
 		search: searchQuery,
 		id: queryId,
@@ -81,10 +88,10 @@ const Appointments = async (props: {
 	let currentPage = 1
 
 	if ('data' in appointmentsResponse) {
-		data = appointmentsResponse.data.data ?? []
-		totalPages = appointmentsResponse.data.totalPages ?? 1
-		totalRecord = appointmentsResponse.data.totalRecord ?? 0
-		currentPage = appointmentsResponse.data.currentPage ?? 1
+		data = appointmentsResponse.data ?? []
+		totalPages = appointmentsResponse.totalPages ?? 1
+		totalRecord = appointmentsResponse.totalRecord ?? 0
+		currentPage = appointmentsResponse.currentPage ?? 1
 	}
 
 	const renderItem = (item: DataProps) => {
@@ -132,7 +139,7 @@ const Appointments = async (props: {
 				</td>
 
 				<td className="hidden xl:table-cell">
-					<AppointmentStatusIndicator status={item.status} />
+					<AppointmentStatusIndicator status={item.status ?? 'PENDING'} />
 				</td>
 
 				<td>
@@ -142,7 +149,7 @@ const Appointments = async (props: {
 							appointmentId={item.id}
 							doctorId={item.doctorId}
 							patientId={item.patientId}
-							status={item.status}
+							status={item.status ?? 'PENDING'}
 							userId={userId ?? 'N/A'}
 						/>
 					</div>

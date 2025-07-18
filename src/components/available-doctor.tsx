@@ -17,8 +17,8 @@ const todayDay = getToday()
 
 interface Days {
 	day: string
-	start_time: string
-	close_time: string
+	startTime: string
+	closeTime: string
 }
 
 interface DataProps {
@@ -29,7 +29,7 @@ export const availableDays = ({ data }: { data: Days[] }) => {
 	const isTodayWorkingDay = data?.find(dayObj => dayObj?.day?.toLowerCase() === todayDay)
 
 	return isTodayWorkingDay
-		? `${isTodayWorkingDay?.start_time} - ${isTodayWorkingDay?.close_time}`
+		? `${isTodayWorkingDay?.startTime} - ${isTodayWorkingDay?.closeTime}`
 		: 'Not Available'
 }
 export const AvailableDoctors = async ({ data }: DataProps) => {
@@ -69,7 +69,7 @@ export const AvailableDoctors = async ({ data }: DataProps) => {
 							<p className="text-base text-gray-600 capitalize">{doc?.specialization}</p>
 							<p className="flex items-center text-sm">
 								<span className="hidden lg:flex">Available Time:</span>
-								{availableDays({ data: doc?.working_days })}
+								{availableDays({ data: doc?.workingDays })}
 							</p>
 						</div>
 					</Card>

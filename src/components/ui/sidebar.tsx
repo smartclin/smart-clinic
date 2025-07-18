@@ -41,10 +41,13 @@ export const SidebarContext = React.createContext<SidebarContextProps | undefine
 function _setCookie(name: string, value: string, maxAgeSeconds: number) {
 	const expiresAt = Date.now() + maxAgeSeconds * 1000
 
-	localStorage.setItem(name, JSON.stringify({
-		value,
-		expiresAt,
-	}))
+	localStorage.setItem(
+		name,
+		JSON.stringify({
+			value,
+			expiresAt,
+		}),
+	)
 }
 
 function SidebarProvider({
@@ -266,21 +269,20 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
 	const { toggleSidebar } = useSidebar()
 
 	return (
-		 <Button
-            className={cn('size-7', className)}
-            data-sidebar="trigger"
-            data-slot="sidebar-trigger"
-            onClick={event => {
-                onClick?.(event)
-                toggleSidebar()
-            }}
-            size="icon"
-            variant="ghost"
-            {...props}
-        >
-            {/* Wrap children in a React Fragment */}
-            
-                </Button>
+		<Button
+			className={cn('size-7', className)}
+			data-sidebar="trigger"
+			data-slot="sidebar-trigger"
+			onClick={event => {
+				onClick?.(event)
+				toggleSidebar()
+			}}
+			size="icon"
+			variant="ghost"
+			{...props}
+		>
+			{/* Wrap children in a React Fragment */}
+		</Button>
 	)
 }
 

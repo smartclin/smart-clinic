@@ -9,10 +9,10 @@ import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
 import { cn } from '@/lib/utils'
+import { api } from '@/trpc/server'
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getPaymentRecords } from '@/utils/services/payments'
 
 const columns = [
 	{
@@ -70,10 +70,10 @@ interface ExtendedProps extends Payment {
 		id: string
 		firstName: string
 		lastName: string
-		phone: string
+		phone: string | null
 		email: string
 		address: string
-		date_of_birth: Date
+		dateOfBirth: Date
 		gender: string
 		img: string | null
 		colorCode: string | null
@@ -90,7 +90,7 @@ const BillingPage = async (props: SearchParamsProps) => {
 		totalPages,
 		totalRecords,
 		currentPage,
-	} = await getPaymentRecords({
+	} = await api.payment.getPaymentRecords({
 		page,
 		search: searchQuery,
 	})
@@ -106,7 +106,7 @@ const BillingPage = async (props: SearchParamsProps) => {
 				colorCode: patient?.colorCode ?? '0000',
 			},
 		}
-	}) as ExtendedProps[]
+	}) as unknown as ExtendedProps[]
 	const isAdmin = await checkRole('ADMIN')
 
 	if (!data) return null
@@ -134,11 +134,11 @@ const BillingPage = async (props: SearchParamsProps) => {
 					</div>
 				</td>
 				<td className="hidden md:table-cell">{patient?.phone}</td>
-				<td className="hidden md:table-cell">{format(item?.bill_date, 'yyyy-MM-dd')}</td>
-				<td className="hidden xl:table-cell">{item?.total_amount?.toFixed(2)}</td>
+				<td className="hidden md:table-cell">{format(item?.billDate, 'yyyy-MM-dd')}</td>
+				<td className="hidden xl:table-cell">{item?.totalAmount?.toFixed(2)}</td>
 				<td className="hidden xl:table-cell">{item?.discount?.toFixed(2)}</td>
-				<td className="hidden xl:table-cell">{(item?.total_amount - item?.discount).toFixed(2)}</td>
-				<td className="hidden xl:table-cell">{(item?.amount_paid ?? 0).toFixed(2)}</td>
+				<td className="hidden xl:table-cell">{(item?.totalAmount - item?.discount).toFixed(2)}</td>
+				<td className="hidden xl:table-cell">{(item?.amountPaid ?? 0).toFixed(2)}</td>
 				<td className="hidden xl:table-cell">
 					<span
 						className={cn(
@@ -154,7 +154,7 @@ const BillingPage = async (props: SearchParamsProps) => {
 				</td>
 
 				<td>
-					<ViewAction href={`/appointments/${item?.appointment_id}?cat=bills`} />
+					<ViewAction href={`/appointments/${item?.appointmentId}?cat=bills`} />
 
 					{isAdmin && (
 						<ActionDialog

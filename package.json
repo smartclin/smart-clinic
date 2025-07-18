@@ -1,32 +1,11 @@
 {
-	"name": "smart-clinic-app",
-	"version": "0.1.0",
-	"private": true,
-	"scripts": {
-		"dev": "next dev --turbopack",
-		"build": "next build",
-		"start": "next start",
-		"lint": "next lint",
-		"auth:gen": "bunx @better-auth/cli generate --config src/lib/auth --output prisma/schema/auth.prisma",
-		"db:push": "prisma db push --schema ./prisma/schema",
-		"db:studio": "prisma studio",
-		"db:admin": "bunx tsx src/server/db/admin.ts",
-		"db:reset": "prisma migrate reset --force --schema ./prisma/schema --skip-seed",
-		"check": "bunx biome check --write ",
-		"check:unsafe": " biome check --write --unsafe src",
-		"db:generate": "prisma generate --schema ./prisma/schema",
-		"db:migrate": "prisma migrate dev"
-	},
-	"prisma": {
-		"schema": "prisma/schema",
-		"seed": "tsx src/server/db/seed.ts"
-	},
 	"dependencies": {
 		"@ariakit/react": "^0.4.17",
 		"@faker-js/faker": "^9.9.0",
 		"@formkit/tempo": "0.1.2",
 		"@hookform/resolvers": "5.1.1",
 		"@internationalized/date": "3.8.2",
+		"@microsoft/microsoft-graph-types": "2.40.0",
 		"@number-flow/react": "0.5.10",
 		"@prisma/adapter-pg": "^6.12.0",
 		"@prisma/client": "^6.12.0",
@@ -109,15 +88,37 @@
 		"zod-prisma-types": "^3.2.4"
 	},
 	"devDependencies": {
-		"@tanstack/react-query-devtools": "^5.83.0",
 		"@biomejs/biome": "^2.1.1",
-		"prisma": "^6.12.0",
-		"tsx": "^4.20.3",
-		"typescript": "^5",
+		"@tailwindcss/postcss": "^4",
+		"@tanstack/react-query-devtools": "^5.83.0",
 		"@types/node": "^24",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
-		"@tailwindcss/postcss": "^4",
-		"tailwindcss": "^4"
-	}
+		"prisma": "^6.12.0",
+		"tailwindcss": "^4",
+		"tsx": "^4.20.3",
+		"typescript": "^5"
+	},
+	"name": "smart-clinic-app",
+	"prisma": {
+		"schema": "prisma/schema",
+		"seed": "tsx src/server/db/seed.ts"
+	},
+	"private": true,
+	"scripts": {
+		"auth:gen": "bunx @better-auth/cli generate --config src/lib/auth.ts --output prisma/schema/auth.prisma",
+		"build": "next build",
+		"check": "bunx biome check --write ",
+		"check:unsafe": " biome check --write --unsafe src",
+		"db:admin": "bunx tsx src/server/db/admin.ts",
+		"db:generate": "prisma generate --schema ./prisma/schema",
+		"db:migrate": "prisma migrate dev",
+		"db:push": "prisma db push --schema ./prisma/schema",
+		"db:reset": "prisma migrate reset --force --schema ./prisma/schema --skip-seed",
+		"db:studio": "prisma studio",
+		"dev": "next dev --turbopack",
+		"lint": "next lint",
+		"start": "next start"
+	},
+	"version": "0.1.0"
 }

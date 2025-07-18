@@ -1,6 +1,6 @@
-import superjson from "superjson";
-import { registerSuperJSONTemporal } from "superjson-temporal";
+import superjson from 'superjson'
+import { registerSuperJSONTemporal } from 'superjson-temporal'
 
-registerSuperJSONTemporal(superjson);
+registerSuperJSONTemporal(superjson)
 
-export { superjson };
+export { superjson }

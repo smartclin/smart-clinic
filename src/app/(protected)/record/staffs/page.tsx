@@ -8,10 +8,10 @@ import { Pagination } from '@/components/pagination'
 import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
+import { api } from '@/trpc/server'
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getAllStaff } from '@/utils/services/staff'
 
 const columns = [
 	{
@@ -49,7 +49,7 @@ const StaffList = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
-	const { data, totalPages, totalRecords, currentPage } = await getAllStaff({
+	const { data, totalPages, totalRecords, currentPage } = await api.staff.getAllStaff({
 		page,
 		search: searchQuery,
 	})
@@ -67,22 +67,32 @@ const StaffList = async (props: SearchParamsProps) => {
 					bgColor={item?.colorCode ?? '0000'}
 					name={item?.name}
 					textClassName="text-black"
-					url={item?.img ?? ''}
+					url={item?.img ?? 'N/A'}
 				/>
 				<div>
 					<h3 className="uppercase">{item?.name}</h3>
-					<span className="text-sm capitalize">{item?.phone}</span>
+					<span className="text-sm capitalize">{item?.phone ?? ''}</span>
 				</div>
 			</td>
 			<td className="hidden md:table-cell">{item?.role}</td>
 			<td className="hidden md:table-cell">{item?.phone}</td>
 			<td className="hidden lg:table-cell">{item?.email}</td>
-			<td className="hidden xl:table-cell">{format(item?.created_at, 'yyyy-MM-dd')}</td>
+			<td className="hidden xl:table-cell">{format(item?.createdAt, 'yyyy-MM-dd')}</td>
 			<td>
 				<div className="flex items-center gap-2">
 					<ActionDialog
-						data={item}
-						id={item?.id}
+						data={{
+							name: item.name,
+							img: item.img ?? undefined,
+							colorCode: item.colorCode ?? undefined,
+							role: item.role,
+							email: item.email,
+							phone: item.phone,
+							address: item.address,
+							department: item.department ?? undefined,
+							licenseNumber: item.licenseNumber ?? undefined,
+						}}
+						id={item.id}
 						type="staff"
 					/>
 

@@ -172,7 +172,7 @@ function AccountsList() {
 
 	return (
 		<ul className="flex flex-col gap-y-2">
-			{query.data.accounts.map((account: Account )=> (
+			{query.data.accounts.map((account: Account) => (
 				<React.Fragment key={account.id}>
 					<AccountListItem account={account} />
 					<Separator className="last:hidden" />

@@ -17,12 +17,12 @@ interface ActionDialogProps {
 	type: 'doctor' | 'staff' | 'delete'
 	id: string
 	data?: {
-		img?: string
+		img?: string 
 		name?: string
 		colorCode?: string
 		role?: string
 		email?: string
-		phone?: string
+		phone?: string  
 		address?: string
 		department?: string
 		licenseNumber?: string

@@ -29,3 +29,5 @@ export const caller = cache(async () => {
 	const ctx = await createContext()
 	return appRouter.createCaller(ctx)
 })
+
+export const api = await caller();

@@ -9,10 +9,10 @@ import { Pagination } from '@/components/pagination'
 import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
+import { api } from '@/trpc/server'
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getAllDoctors } from '@/utils/services/doctor'
 
 const columns = [
 	{
@@ -50,7 +50,7 @@ const DoctorsList = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
-	const { data, totalPages, totalRecords, currentPage } = await getAllDoctors({
+	const { data, totalPages, totalRecords, currentPage } = await api.doctor.getAllDoctors({
 		page,
 		search: searchQuery,
 	})
@@ -75,10 +75,10 @@ const DoctorsList = async (props: SearchParamsProps) => {
 					<span className="text-sm capitalize">{item?.specialization}</span>
 				</div>
 			</td>
-			<td className="hidden md:table-cell">{item?.license_number}</td>
+			<td className="hidden md:table-cell">{item?.licenseNumber}</td>
 			<td className="hidden md:table-cell">{item?.phone}</td>
 			<td className="hidden lg:table-cell">{item?.email}</td>
-			<td className="hidden xl:table-cell">{format(item?.created_at, 'yyyy-MM-dd')}</td>
+			<td className="hidden xl:table-cell">{format(item?.createdAt, 'yyyy-MM-dd')}</td>
 			<td>
 				<div className="flex items-center gap-2">
 					<ViewAction href={`doctors/${item?.id}`} />

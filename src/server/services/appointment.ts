@@ -115,12 +115,17 @@ export async function getPatientAppointments({ page, limit, search, id }: AllApp
 				take: LIMIT,
 				select: {
 					id: true,
+					createdAt: true,
+					updatedAt: true,
+					type: true,
+					status: true,
 					patientId: true,
 					doctorId: true,
-					type: true,
+					serviceId: true,
 					appointmentDate: true,
 					time: true,
-					status: true,
+					note: true,
+					reason: true,
 					patient: {
 						select: {
 							id: true,

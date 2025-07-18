@@ -9,6 +9,7 @@
         "@formkit/tempo": "0.1.2",
         "@hookform/resolvers": "5.1.1",
         "@internationalized/date": "3.8.2",
+        "@microsoft/microsoft-graph-types": "2.40.0",
         "@number-flow/react": "0.5.10",
         "@prisma/adapter-pg": "^6.12.0",
         "@prisma/client": "^6.12.0",
@@ -286,6 +287,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.29", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ=="],
 
     "@levischuck/tiny-cbor": ["@levischuck/tiny-cbor@0.2.11", "", {}, "sha512-llBRm4dT4Z89aRsm6u2oEZ8tfwL/2l6BwpZ7JcyieouniDECM5AqNgr/y08zalEIvW3RSK4upYyybDcmjXqAow=="],
+
+    "@microsoft/microsoft-graph-types": ["@microsoft/microsoft-graph-types@2.40.0", "", {}, "sha512-1fcPVrB/NkbNcGNfCy+Cgnvwxt6/sbIEEFgZHFBJ670zYLegENYJF8qMo7x3LqBjWX2/Eneq5BVVRCLTmlJN+g=="],
 
     "@next/env": ["@next/env@15.4.2-canary.2", "", {}, "sha512-WpttvT23am4oA1Oh2wwZga5KtF0j26u4GLD1+Lhn+ejc6tkNOQ11ZzrLKCGxooybJpMT+6fEuKm3TuWKmblqGg=="],
 
