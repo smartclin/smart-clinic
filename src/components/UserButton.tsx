@@ -13,11 +13,10 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ObfuscatedLink } from '@/config/ObfuscatedLink'
 import { toast } from '@/hooks/use-toast'
 import { useRouter } from '@/i18n/navigation'
 import { authClient, useSession } from '@/lib/auth/auth-client'
-
-import { ObfuscatedLink } from './links/ObfuscatedLink'
 
 type UserButtonProps = {
 	setIsMobileNavOpen?: Dispatch<SetStateAction<boolean>>
@@ -131,7 +130,7 @@ const UserButton = ({ setIsMobileNavOpen, className }: UserButtonProps) => {
 						<p
 							className="!text-base"
 							onClick={handleSignOut}
-							onKeyPress={handleKeyPress}
+							onKeyUp={handleSignOut}
 						>
 							{t('deconnexion')}
 						</p>

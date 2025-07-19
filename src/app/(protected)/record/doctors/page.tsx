@@ -63,7 +63,7 @@ const DoctorsList = async (props: SearchParamsProps) => {
 	// and the component would crash unless wrapped in an error boundary or try-catch.
 	if (!data) {
 		// You might want to return an error message or a loading spinner if data can be null initially
-		return <div className='py-10 text-center'>No doctors found or an error occurred.</div>
+		return <div className="py-10 text-center">No doctors found or an error occurred.</div>
 	}
 
 	const session = await getSession()

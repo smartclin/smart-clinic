@@ -82,7 +82,7 @@ export async function addVitalSigns(
 			medicalRecord = await db.medicalRecords.create({
 				data: {
 					patientId: validatedData.patientId,
-					appointmentId: Number(appointmentId),
+					appointmentId: appointmentId,
 					doctorId: doctorId,
 				},
 			})
@@ -93,7 +93,7 @@ export async function addVitalSigns(
 		await db.vitalSigns.create({
 			data: {
 				...validatedData,
-				medicalId: Number(medId ?? ''),
+				medicalId: medId ?? 0,
 			},
 		})
 

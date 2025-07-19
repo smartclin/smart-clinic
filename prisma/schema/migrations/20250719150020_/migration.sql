@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "VitalSigns" ALTER COLUMN "bodyTemperature" DROP NOT NULL,
+ALTER COLUMN "systolic" DROP NOT NULL,
+ALTER COLUMN "diastolic" DROP NOT NULL,
+ALTER COLUMN "heartRate" DROP NOT NULL,
+ALTER COLUMN "height" DROP NOT NULL;

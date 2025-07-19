@@ -8,10 +8,13 @@ import { Pagination } from '@/components/pagination'
 import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
+import { getSession } from '@/lib/auth'
+import { api } from '@/trpc/server'
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getAllStaff } from '@/utils/services/staff'
+
+// import { getAllStaff } from '@/utils/services/staff'
 
 const columns = [
 	{
@@ -35,7 +38,7 @@ const columns = [
 	},
 	{
 		header: 'Joined Date',
-		key: 'created_at',
+		key: 'createdAt',
 		className: 'hidden xl:table-cell',
 	},
 	{
@@ -49,13 +52,14 @@ const StaffList = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
-	const { data, totalPages, totalRecords, currentPage } = await getAllStaff({
+	const { data, totalPages, totalRecords, currentPage } = await api.staff.getAllStaff({
 		page,
 		search: searchQuery,
 	})
 
 	if (!data) return null
-	const isAdmin = await checkRole('ADMIN')
+	const session = await getSession()
+	const isAdmin = await checkRole(session, 'ADMIN')
 
 	const renderRow = (item: Staff) => (
 		<tr
@@ -77,7 +81,7 @@ const StaffList = async (props: SearchParamsProps) => {
 			<td className="hidden md:table-cell">{item?.role}</td>
 			<td className="hidden md:table-cell">{item?.phone}</td>
 			<td className="hidden lg:table-cell">{item?.email}</td>
-			<td className="hidden xl:table-cell">{format(item?.created_at, 'yyyy-MM-dd')}</td>
+			<td className="hidden xl:table-cell">{format(item?.createdAt, 'yyyy-MM-dd')}</td>
 			<td>
 				<div className="flex items-center gap-2">
 					<ActionDialog

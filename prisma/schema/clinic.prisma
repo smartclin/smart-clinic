@@ -252,15 +252,15 @@ model VitalSigns {
     patientId        String
     medicalId        Int
     medical          MedicalRecords @relation(fields: [medicalId], references: [id], onDelete: Cascade)
-    bodyTemperature  Float
-    systolic         Int
-    diastolic        Int
-    heartRate        String
+    bodyTemperature  Float?
+    systolic         Int?
+    diastolic        Int?
+    heartRate        String?
     respiratoryRate  Int?
     oxygenSaturation Int?
     weight           Float
-    height           Float
-    
+    height           Float?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

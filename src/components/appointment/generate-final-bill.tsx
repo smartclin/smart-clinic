@@ -3,13 +3,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { type SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import type { z } from 'zod'
+import { z } from 'zod'
 
-import { generateBill } from '@/app/actions/medical'
 import { PaymentSchema } from '@/lib/schema'
+import { trpc } from '@/trpc/react'
 
 import { CustomInput } from '../custom-input'
 import { Button } from '../ui/button'
@@ -17,46 +16,50 @@ import { CardHeader } from '../ui/card'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { Form } from '../ui/form'
 
-interface DataProps {
-	id?: string | number
-	total_bill: number
-}
-export const GenerateFinalBills = ({ id, total_bill }: DataProps) => {
-	const [isLoading, setIsLoading] = useState(false)
-	const router = useRouter()
-	const _DiscountInfo = null
+const schema = PaymentSchema.pick({ discount: true, billDate: true }).extend({
+	totalAmount: z.number(),
+	id: z.number().optional(),
+})
 
-	const form = useForm<z.infer<typeof PaymentSchema>>({
-		resolver: zodResolver(PaymentSchema),
+type GenerateBillInput = z.infer<typeof schema>
+
+interface DataProps {
+	id?: number
+	totalBill: number
+}
+
+export const GenerateFinalBills = ({ id, totalBill }: DataProps) => {
+	const router = useRouter()
+
+	const form = useForm<GenerateBillInput>({
+		resolver: zodResolver(schema),
 		defaultValues: {
-			id: id?.toString(),
-			billDate: new Date(),
-			discount: '0',
-			total_amount: total_bill.toString(),
+			discount: 0,
+			billDate: new Date() ?? '00/00/0000',
+			totalAmount: totalBill,
+			id: id ?? undefined,
 		},
 	})
 
-	const handleOnSubmit = async (values: z.infer<typeof PaymentSchema>) => {
-		try {
-			setIsLoading(true)
+	const { control, handleSubmit } = form
 
-			const resp = await generateBill(values)
+	const generateBill = trpc.payment.generateBill.useMutation({
+		onSuccess: () => {
+			toast.success('Patient bill generated successfully!')
+			router.refresh()
+			form.reset()
+		},
+		onError: error => {
+			toast.error(error.message || 'Something went wrong')
+		},
+	})
 
-			if (resp.success) {
-				toast.success('Patient bill generated successfully!')
-
-				router.refresh()
-
-				form.reset()
-			} else if (resp.error) {
-				toast.error(resp.msg)
-			}
-		} catch (error) {
-			console.log(error)
-			toast.error('Something went wrong. Please try again.')
-		} finally {
-			setIsLoading(false)
-		}
+	const handleOnSubmit: SubmitHandler<GenerateBillInput> = values => {
+		generateBill.mutate({
+			...values,
+			id: id ?? 1,
+			totalAmount: totalBill,
+		})
 	}
 
 	return (
@@ -82,17 +85,17 @@ export const GenerateFinalBills = ({ id, total_bill }: DataProps) => {
 				<Form {...form}>
 					<form
 						className="space-y-8"
-						onSubmit={form.handleSubmit(handleOnSubmit)}
+						onSubmit={handleSubmit(handleOnSubmit)}
 					>
 						<div className="flex items-center gap-2">
-							<div className="">
+							<div>
 								<span>Total Bill</span>
-								<p className="font-semibold text-3xl">{total_bill?.toFixed(2)}</p>
+								<p className="font-semibold text-3xl">{totalBill.toFixed(2)}</p>
 							</div>
 						</div>
 
 						<CustomInput
-							control={form.control}
+							control={control}
 							label="Discount (%)"
 							name="discount"
 							placeholder="eg.: 5"
@@ -100,7 +103,7 @@ export const GenerateFinalBills = ({ id, total_bill }: DataProps) => {
 						/>
 
 						<CustomInput
-							control={form.control}
+							control={control}
 							inputType="date"
 							label="Bill Date"
 							name="billDate"
@@ -110,7 +113,7 @@ export const GenerateFinalBills = ({ id, total_bill }: DataProps) => {
 
 						<Button
 							className="w-full bg-blue-600"
-							disabled={isLoading}
+							disabled={generateBill.status === 'pending'}
 							type="submit"
 						>
 							Generate Bill

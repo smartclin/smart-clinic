@@ -8,13 +8,13 @@ import { StatCard } from '@/components/stat-card'
 import { RecentAppointments } from '@/components/tables/recent-appointment'
 import { Button } from '@/components/ui/button'
 import { getSession } from '@/lib/auth'
-import { caller } from '@/trpc/server'
+import { api } from '@/trpc/server'
 import type { AvailableDoctorProps } from '@/types/data-types'
 
 const DoctorDashboard = async () => {
 	const session = await getSession()
 	const user = session?.user
-	const rawAvailableDoctors = await (await caller()).doctor.getAvailableDoctors()
+	const rawAvailableDoctors = await api.doctor.getAvailableDoctors()
 
 	let availableDoctors: AvailableDoctorProps = []
 
@@ -40,7 +40,7 @@ const DoctorDashboard = async () => {
 		appointmentCounts,
 		monthlyData,
 		last5Records,
-	} = await (await caller()).doctor.getDoctorDashboardStats()
+	} = await api.doctor.getDoctorDashboardStats()
 
 	const cardData = [
 		{

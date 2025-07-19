@@ -27,6 +27,7 @@ const defaultValues: z.infer<typeof StaffFormSchema> = {
 	phone: '',
 	licenseNumber: '',
 	department: '',
+	img: '',
 	address: '',
 	password: '',
 	role: 'STAFF', // Default role if not provided by the user

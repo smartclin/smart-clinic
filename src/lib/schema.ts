@@ -128,12 +128,12 @@ export const StaffAuthSchema = z.object({
 	email: z.email(),
 	phone: z.string().min(1),
 	address: z.string().min(1),
-	department: z.string().optional().nullable(),
-	img: z.string().optional().nullable(),
-	licenseNumber: z.string().optional().nullable(),
-	colorCode: z.string().optional().nullable(),
+	department: z.string().optional(),
+	img: z.string().optional(),
+	licenseNumber: z.string().optional(),
+	colorCode: z.string().optional(),
 	hireDate: z.date().optional(),
-	salary: z.number().optional().nullable(),
+	salary: z.number().optional(),
 	role: z.enum(['ADMIN', 'DOCTOR', 'STAFF', 'PATIENT']),
 	status: z.enum(['ACTIVE', 'INACTIVE', 'DORMANT']).optional(),
 	password: z.string().min(6, 'Password should be at least 6 characters long'),
@@ -172,26 +172,94 @@ export const CreateStaffOutputSchema = z.union([
 	}),
 ])
 
+const numericPreprocessor = (val: unknown) => {
+	if (val === '' || val === null || (typeof val === 'string' && val.trim() === '')) {
+		return undefined // Maps empty/null/whitespace strings to undefined
+	}
+	return Number(val) // Attempts to convert to number
+}
+
 export const VitalSignsSchema = z.object({
-	patientId: z.string(),
-	medicalId: z.number().int().optional(),
+	patientId: z.string().min(1, 'Patient ID is required.'), // Required string
 
-	bodyTemperature: z.number().min(0, 'Temperature cannot be negative').optional(),
+	// medicalId is Int (required) in Prisma model.
+	// Ensure it's passed as a number.
+	medicalId: z.preprocess(
+		numericPreprocessor,
+		z.number().int('Medical ID must be an integer.').min(1, 'Medical ID is required.'),
+	),
 
-	heartRate: z.number().int().min(0, 'Heart rate cannot be negative').optional(),
+	// bodyTemperature is Float? (optional)
+	bodyTemperature: z.preprocess(
+		numericPreprocessor,
+		z.number().min(0, 'Temperature cannot be negative.').optional(),
+	),
 
-	systolic: z.number().int().min(0, 'Systolic BP cannot be negative').optional(),
+	// systolic is Int? (optional)
+	systolic: z.preprocess(
+		numericPreprocessor,
+		z
+			.number()
+			.int('Systolic BP must be an integer.')
+			.min(0, 'Systolic BP cannot be negative.')
+			.optional(),
+	),
 
-	diastolic: z.number().int().min(0, 'Diastolic BP cannot be negative').optional(),
+	// diastolic is Int? (optional)
+	diastolic: z.preprocess(
+		numericPreprocessor,
+		z
+			.number()
+			.int('Diastolic BP must be an integer.')
+			.min(0, 'Diastolic BP cannot be negative.')
+			.optional(),
+	),
 
-	respiratoryRate: z.number().int().min(0, 'Respiratory rate cannot be negative').optional(),
+	// heartRate is String? (optional string)
+	heartRate: z.string().optional(), // No preprocess to number, it's a string
 
-	oxygenSaturation: z.number().int().min(0).max(100, 'Oxygen saturation must be 0-100').optional(),
+	// respiratoryRate is Int? (optional)
+	respiratoryRate: z.preprocess(
+		numericPreprocessor,
+		z
+			.number()
+			.int('Respiratory rate must be an integer.')
+			.min(0, 'Respiratory rate cannot be negative.')
+			.optional(),
+	),
 
-	weight: z.number().min(0, 'Weight cannot be negative').optional(),
+	// oxygenSaturation is Int? (optional)
+	oxygenSaturation: z.preprocess(
+		numericPreprocessor,
+		z
+			.number()
+			.int('Oxygen saturation must be an integer.')
+			.min(0)
+			.max(100, 'Oxygen saturation must be 0-100.')
+			.optional(),
+	),
 
-	height: z.number().min(0, 'Height cannot be negative').optional(),
+	// weight is Float (required)
+	weight: z.preprocess(
+		numericPreprocessor,
+		z
+			.number()
+			.min(0, 'Weight cannot be negative.'), // No .optional()
+	),
+
+	// height is Float (required)
+	height: z.preprocess(
+		numericPreprocessor,
+		z
+			.number()
+
+			.min(0, 'Height cannot be negative.')
+			.optional(), // No .optional()
+	),
 })
+
+// This type will now accurately reflect the schema based on your Prisma model
+export type VitalSignsFormData = z.infer<typeof VitalSignsSchema>
 
 export const DiagnosisSchema = z.object({
 	patientId: z.string(),
@@ -205,15 +273,13 @@ export const DiagnosisSchema = z.object({
 })
 
 export const PaymentSchema = z.object({
-	id: z.string(),
-	// patientId: z.string(),
-	// appointmentId: z.string(),
-	billDate: z.coerce.date(),
-	// paymentDate: z.string(),
-	discount: z.string({ message: 'discount' }),
-	totalAmount: z.string(),
-	// amountPaid: z.string(),
+	id: z.number(),
+	billDate: z.date(),
+	discount: z.number(),
+	totalAmount: z.number(),
 })
+
+export type PaymentInput = z.infer<typeof PaymentSchema>
 
 export const PatientBillSchema = z.object({
 	billId: z.string(),

@@ -126,7 +126,7 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
-								 label="Body Temperature (°C)"
+								label="Body Temperature (°C)"
 								name="bodyTemperature"
 								placeholder="e.g.: 37.5"
 								type="input"
@@ -143,7 +143,6 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
-								
 								label="Systolic BP"
 								name="systolic"
 								placeholder="e.g.: 120"
@@ -151,7 +150,6 @@ export const AddVitalSigns = ({
 							/>
 							<CustomInput
 								control={form.control}
-								
 								label="Diastolic BP"
 								name="diastolic"
 								placeholder="e.g.: 80"
@@ -162,7 +160,6 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
-								
 								label="Weight (Kg)"
 								name="weight"
 								placeholder="e.g.: 80"
@@ -170,7 +167,6 @@ export const AddVitalSigns = ({
 							/>
 							<CustomInput
 								control={form.control}
-								
 								label="Height (Cm)"
 								name="height"
 								placeholder="e.g.: 175"
@@ -181,7 +177,6 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
-								
 								label="Respiratory Rate"
 								name="respiratoryRate"
 								placeholder="Optional"
@@ -189,7 +184,6 @@ export const AddVitalSigns = ({
 							/>
 							<CustomInput
 								control={form.control}
-								
 								label="Oxygen Saturation"
 								name="oxygenSaturation"
 								placeholder="Optional"
@@ -199,7 +193,6 @@ export const AddVitalSigns = ({
 
 						<Button
 							className="w-full"
-							
 							type="submit"
 						>
 							{isSubmitting ? 'Submitting...' : 'Submit'}

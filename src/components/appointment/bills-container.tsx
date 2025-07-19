@@ -2,7 +2,8 @@ import type { PatientBills } from '@prisma/client'
 import { format } from 'date-fns'
 import { ReceiptText } from 'lucide-react'
 
-import db from '@/lib/db'
+import { getSession } from '@/lib/auth'
+import db from '@/server/db'
 import { calculateDiscount } from '@/utils'
 import { checkRole } from '@/utils/roles'
 
@@ -55,7 +56,7 @@ interface ExtendedBillProps extends PatientBills {
 		id: number
 	}
 }
-export const BillsContainer = async ({ id }: { id: string }) => {
+export const BillsContainer = async ({ id }: { id: number }) => {
 	const [data, servicesData] = await Promise.all([
 		db.payment.findFirst({
 			where: { appointmentId: Number(id) },
@@ -77,15 +78,15 @@ export const BillsContainer = async ({ id }: { id: string }) => {
 	const billData = data?.bills || []
 	const discount = data
 		? calculateDiscount({
-				amount: data?.total_amount,
+				amount: data?.totalAmount,
 				discount: data?.discount,
 			})
 		: null
 
 	if (billData) {
-		totalBills = billData.reduce((sum, acc) => sum + acc.total_cost, 0)
+		totalBills = billData.reduce((sum, acc) => sum + acc.totalCost, 0)
 	}
-
+	const session = await getSession()
 	const renderRow = (item: ExtendedBillProps) => {
 		return (
 			<tr
@@ -99,8 +100,8 @@ export const BillsContainer = async ({ id }: { id: string }) => {
 				<td className="">{format(item?.serviceDate, 'MMM d, yyyy')}</td>
 
 				<td className="hidden items-center py-2 md:table-cell">{item?.quantity}</td>
-				<td className="hidden lg:table-cell">{item?.unit_cost.toFixed(2)}</td>
-				<td>{item?.total_cost.toFixed(2)}</td>
+				<td className="hidden lg:table-cell">{item?.unitCost.toFixed(2)}</td>
+				<td>{item?.totalCost.toFixed(2)}</td>
 
 				<td className="hidden xl:table-cell">
 					<ActionDialog
@@ -128,7 +129,7 @@ export const BillsContainer = async ({ id }: { id: string }) => {
 					</div>
 				</div>
 
-				{((await checkRole('ADMIN')) || (await checkRole('DOCTOR'))) && (
+				{((await checkRole(session, 'ADMIN')) || (await checkRole(session, 'DOCTOR'))) && (
 					<div className="mt-5 flex items-center justify-end">
 						<AddBills
 							appId={id}
@@ -138,7 +139,7 @@ export const BillsContainer = async ({ id }: { id: string }) => {
 
 						<GenerateFinalBills
 							id={data?.id}
-							total_bill={totalBills}
+							totalBill={totalBills}
 						/>
 					</div>
 				)}
@@ -155,7 +156,7 @@ export const BillsContainer = async ({ id }: { id: string }) => {
 			<div className="flex flex-wrap items-center justify-between space-y-6 py-2 md:text-center lg:flex-nowrap">
 				<div className="w-[120px]">
 					<span className="text-gray-500">Total Bill</span>
-					<p className="font-semibold text-xl">{(data?.total_amount || totalBills).toFixed(2)}</p>
+					<p className="font-semibold text-xl">{(data?.totalAmount || totalBills).toFixed(2)}</p>
 				</div>
 				<div className="w-[120px]">
 					<span className="text-gray-500">Discount</span>
@@ -174,13 +175,13 @@ export const BillsContainer = async ({ id }: { id: string }) => {
 				<div className="w-[120px]">
 					<span className="text-gray-500">Amount Paid</span>
 					<p className="font-semibold text-emerald-600 text-xl">
-						{(data?.amount_paid || 0.0).toFixed(2)}
+						{(data?.amountPaid || 0.0).toFixed(2)}
 					</p>
 				</div>
 				<div className="w-[120px]">
 					<span className="text-gray-500">Unpaid Amount</span>
 					<p className="font-semibold text-red-600 text-xl">
-						{((discount?.finalAmount ?? 0) - (data?.amount_paid ?? 0)).toFixed(2)}
+						{((discount?.finalAmount ?? 0) - (data?.amountPaid ?? 0)).toFixed(2)}
 					</p>
 				</div>
 			</div>

@@ -1,17 +1,16 @@
-import { getDoctors } from '@/utils/services/doctor'
-import { getPatientById } from '@/utils/services/patient'
+import { api } from '@/trpc/server'
 
 import { BookAppointment } from './forms/book-appointment'
 
 export const AppointmentContainer = async ({ id }: { id: string }) => {
-	const { data } = await getPatientById(id)
-	const { data: doctors } = await getDoctors()
+	const patient = await api.patient.getPatientById(id)
+const { data: doctors } = await api.doctor.getDoctors()
 
 	return (
 		<div>
-			{data && doctors && (
+			{patient && doctors && (
 				<BookAppointment
-					data={data}
+					data={patient}
 					doctors={doctors}
 				/>
 			)}

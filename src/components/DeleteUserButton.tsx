@@ -17,9 +17,9 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth/auth-client'
 
-import { Button } from '../ui/button'
+import { Button } from './ui/button'
 
 export default function DeleteUserButton({ user }: { user: User }) {
 	const [loading, setLoading] = useState(false)

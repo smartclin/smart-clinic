@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { MotionDiv, MotionSpan } from '@/components/motionDev'
 import { Button } from '@/components/ui/button'
 import { useSession } from '@/lib/auth/auth-client'
-import { api } from '@/trpc/react'
+import { trpc } from '@/trpc/react'
 
 export default function Hero({
 	siteMetadata,
@@ -15,7 +15,7 @@ export default function Hero({
 }) {
 	const router = useRouter()
 	const { data: session, isPending } = useSession()
-	const healthStatus = api.healthCheck.useQuery()
+	const healthStatus = trpc.healthCheck.useQuery()
 
 	useEffect(() => {
 		if (session?.user?.role) {

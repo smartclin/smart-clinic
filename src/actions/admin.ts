@@ -42,6 +42,10 @@ export async function createNewStaff(data: StaffInput) {
 				id: user.user.id,
 				colorCode: generateRandomColor(),
 				status: 'ACTIVE',
+				phone: rest.phone ?? '',
+				licenseNumber: rest.licenseNumber ?? '',
+				department: rest.department ?? '',
+				img: rest.img ?? '',
 			},
 		})
 

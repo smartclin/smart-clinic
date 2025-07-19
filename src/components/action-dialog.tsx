@@ -6,7 +6,9 @@ import { useState } from 'react'
 import { FaQuestion } from 'react-icons/fa6'
 import { toast } from 'sonner'
 
-import { deleteDataById } from '@/app/actions/general'
+// import { deleteDataById } from '@/app/actions/general'
+
+import { api } from '@/trpc/server'
 
 import { ProfileImage } from './profile-image'
 import { SmallCard } from './small-card'
@@ -17,15 +19,15 @@ interface ActionDialogProps {
 	type: 'doctor' | 'staff' | 'delete'
 	id: string
 	data?: {
-		img?: string
-		name?: string
-		colorCode?: string
-		role?: string
-		email?: string
-		phone?: string
-		address?: string
-		department?: string
-		licenseNumber?: string
+	     img?: string | null; // Changed to allow null
+        name?: string | null; // Changed to allow null
+        colorCode?: string | null; // Changed to allow null
+        role?: string | null;
+        email?: string | null;
+        phone?: string | null;
+        address?: string | null;
+        department?: string | null;
+        licenseNumber?: string | null;
 	}
 	deleteType?: 'doctor' | 'staff' | 'patient' | 'payment' | 'bill'
 }
@@ -43,7 +45,7 @@ export const ActionDialog = ({ id, data, type, deleteType }: ActionDialogProps) 
 					setLoading(false)
 					return
 				}
-				const res = await deleteDataById(id, deleteType)
+				const res = await api.admin.deleteDataById({id, deleteType})
 
 				if (res.success) {
 					toast.success('Record deleted successfully')
