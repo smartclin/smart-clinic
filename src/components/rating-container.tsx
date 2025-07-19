@@ -1,7 +1,7 @@
 // src/components/rating-container.tsx
 
 // FIX: Import 'caller' instead of 'trpc' for direct server-side calls
-import { caller } from '@/trpc/server'
+import { api } from '@/trpc/server'
 
 import { RatingChart } from './charts/rating-chart'
 import { RatingList } from './rating-list'
@@ -25,7 +25,7 @@ interface RatingWithPatient {
 
 export const RatingContainer = async ({ id }: { id: string }) => {
 	// FIX: Use 'caller' to directly call the tRPC procedure
-	const result = await (await caller()).doctor.getRatingById(id)
+	const result = await api.doctor.getRatingById(id)
 
 	// Ensure the structure matches what you're destructuring
 	// Based on the error message type, it seems your tRPC procedure returns an object

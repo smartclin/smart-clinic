@@ -1,4 +1,4 @@
-import type { Patient, Payment } from '@prisma/client'
+import type { Payment } from '@prisma/client'
 import { format } from 'date-fns'
 import { ReceiptText } from 'lucide-react'
 
@@ -8,11 +8,13 @@ import { Pagination } from '@/components/pagination'
 import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
+import { getSession } from '@/lib/auth'
 import { cn } from '@/lib/utils'
+// import { getPaymentRecords } from '@/utils/services/payments'; // REMOVE this import
+import { api } from '@/trpc/server' // Import the tRPC server client
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getPaymentRecords } from '@/utils/services/payments'
 
 const columns = [
 	{
@@ -52,7 +54,7 @@ const columns = [
 	{
 		header: 'Paid',
 		key: 'payable',
-		className: 'hidden xl:table-cell',
+		className: 'hidden xl:table-cell', // This key should likely be 'amount_paid' not 'payable' if it represents the paid amount
 	},
 	{
 		header: 'Status',
@@ -65,15 +67,17 @@ const columns = [
 	},
 ]
 
-interface ExtendedProps extends Payment {
+// Define a type that accurately reflects the structure of a single payment record
+// as returned by your tRPC procedure, including the patient details.
+type PaymentRecord = Payment & {
 	patient: {
 		id: string
 		firstName: string
 		lastName: string
-		phone: string
+		phone: string | null // Based on Prisma Patient model, phone can be null
 		email: string
-		address: string
-		date_of_birth: Date
+		address: string | null // Based on Prisma Patient model, address can be null
+		dateOfBirth: Date | null // Prisma usually uses dateOfBirth, not date_of_birth
 		gender: string
 		img: string | null
 		colorCode: string | null
@@ -85,40 +89,40 @@ const BillingPage = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
+	// Use the tRPC API to fetch the data
 	const {
 		data: rawData,
 		totalPages,
 		totalRecords,
 		currentPage,
-	} = await getPaymentRecords({
+	} = await api.payment.getPaymentRecords({
 		page,
 		search: searchQuery,
 	})
 
-	// Ensure each patient object has all required fields for ExtendedProps
-	const data = rawData?.map(item => {
-		const patient = item?.patient as Patient
-		return {
-			...item,
-			patient: {
-				...patient,
-				img: patient?.img ?? '',
-				colorCode: patient?.colorCode ?? '0000',
-			},
-		}
-	}) as ExtendedProps[]
-	const isAdmin = await checkRole('ADMIN')
+	// Explicitly type `rawData` as an array of `PaymentRecord`
+	// No mapping needed if your tRPC procedure returns the correct structure directly.
+	const data: PaymentRecord[] = rawData as PaymentRecord[]
+	const session = await getSession()
+	const isAdmin = await checkRole(session, 'ADMIN')
 
-	if (!data) return null
+	if (!data) {
+		// Handle case where data might be null or undefined (though tRPC usually ensures an array)
+		return (
+			<div className="flex h-screen items-center justify-center text-gray-700">
+				No payment data available.
+			</div>
+		)
+	}
 
-	const renderRow = (item: ExtendedProps) => {
+	const renderRow = (item: PaymentRecord) => {
 		const name = `${item?.patient?.firstName} ${item?.patient?.lastName}`
 		const patient = item?.patient
 
 		return (
 			<tr
 				className="border-gray-200 border-b text-sm even:bg-slate-50 hover:bg-slate-50"
-				key={item?.id + patient?.id}
+				key={`${item?.id}-${patient?.id}`} // Use unique key
 			>
 				<td># {item?.id}</td>
 				<td className="flex items-center gap-4 p-4">
@@ -126,7 +130,7 @@ const BillingPage = async (props: SearchParamsProps) => {
 						bgColor={patient?.colorCode ?? '0000'}
 						name={name}
 						textClassName="text-black"
-						url={item?.patient?.img ?? ''}
+						url={patient?.img ?? ''} // Use patient.img directly
 					/>
 					<div>
 						<h3 className="uppercase">{name}</h3>
@@ -134,11 +138,13 @@ const BillingPage = async (props: SearchParamsProps) => {
 					</div>
 				</td>
 				<td className="hidden md:table-cell">{patient?.phone}</td>
-				<td className="hidden md:table-cell">{format(item?.bill_date, 'yyyy-MM-dd')}</td>
-				<td className="hidden xl:table-cell">{item?.total_amount?.toFixed(2)}</td>
+				<td className="hidden md:table-cell">{format(item?.billDate, 'yyyy-MM-dd')}</td>
+				<td className="hidden xl:table-cell">{item?.totalAmount?.toFixed(2)}</td>
 				<td className="hidden xl:table-cell">{item?.discount?.toFixed(2)}</td>
-				<td className="hidden xl:table-cell">{(item?.total_amount - item?.discount).toFixed(2)}</td>
-				<td className="hidden xl:table-cell">{(item?.amount_paid ?? 0).toFixed(2)}</td>
+				<td className="hidden xl:table-cell">
+					{(item?.totalAmount - (item?.discount ?? 0)).toFixed(2)}
+				</td>
+				<td className="hidden xl:table-cell">{(item?.amountPaid ?? 0).toFixed(2)}</td>
 				<td className="hidden xl:table-cell">
 					<span
 						className={cn(
@@ -154,7 +160,7 @@ const BillingPage = async (props: SearchParamsProps) => {
 				</td>
 
 				<td>
-					<ViewAction href={`/appointments/${item?.appointment_id}?cat=bills`} />
+					<ViewAction href={`/appointments/${item?.appointmentId}?cat=bills`} />
 
 					{isAdmin && (
 						<ActionDialog
@@ -176,7 +182,6 @@ const BillingPage = async (props: SearchParamsProps) => {
 						className="text-gray-500"
 						size={20}
 					/>
-
 					<p className="font-semibold text-2xl">{totalRecords}</p>
 					<span className="text-gray-600 text-sm xl:text-base">total records</span>
 				</div>

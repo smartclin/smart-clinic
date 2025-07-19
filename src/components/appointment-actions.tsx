@@ -1,3 +1,4 @@
+import type { AppointmentStatus } from '@prisma/client'
 import { EllipsisVertical, User } from 'lucide-react'
 import Link from 'next/link'
 
@@ -10,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 
 interface ActionsProps {
 	userId: string
-	status: string
+	status: AppointmentStatus
 	patientId: string
 	doctorId: string
 	appointmentId: number
@@ -24,7 +25,7 @@ export const AppointmentActionOptions = async ({
 }: ActionsProps) => {
 	const session = await getSession()
 	const user = session?.user
-	const isAdmin = await checkRole('ADMIN')
+	const isAdmin = await checkRole(session, 'ADMIN')
 
 	return (
 		<Popover>
@@ -56,15 +57,14 @@ export const AppointmentActionOptions = async ({
 
 					{status !== 'SCHEDULED' && (
 						<AppointmentActionDialog
-							disabled={isAdmin || user.userId === doctorId}
+							disabled={isAdmin || user?.id === doctorId}
 							id={appointmentId}
 							type="approve"
 						/>
 					)}
 					<AppointmentActionDialog
 						disabled={
-							status === 'PENDING' &&
-							(isAdmin || user.userId === doctorId || user.userId === patientId)
+							status === 'PENDING' && (isAdmin || user?.id === doctorId || user?.id === patientId)
 						}
 						id={appointmentId}
 						type="cancel"

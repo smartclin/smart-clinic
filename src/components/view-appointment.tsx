@@ -3,7 +3,7 @@ import { format } from 'date-fns'
 import { Calendar, Phone } from 'lucide-react'
 
 import { getSession } from '@/lib/auth'
-import { caller } from '@/trpc/server'
+import { api } from '@/trpc/server'
 import { calculateAge, formatDateTime } from '@/utils'
 import { checkRole } from '@/utils/roles'
 
@@ -28,7 +28,7 @@ export const ViewAppointment = async ({ id }: ViewAppointmentProps) => {
 	const session = await getSession()
 	if (!session) return null
 	const userId = session?.user.id
-	const data = await (await caller()).appointment.getAppointmentById(id)
+	const data = await api.appointment.getAppointmentById(id)
 	if (!data) return null
 
 	return (
@@ -155,14 +155,14 @@ export const ViewAppointment = async ({ id }: ViewAppointmentProps) => {
 						</div>
 					</div>
 
-					{(await checkRole('ADMIN')) || data?.data?.doctorId === userId ? (
+					{(await checkRole(session, 'ADMIN')) || data?.data?.doctorId === userId ? (
 						<>
 							<p className="mt-4 w-fit rounded bg-blue-100 px-2 py-1 text-blue-600 text-xs md:text-sm">
 								Perform Action
 							</p>
 							<AppointmentAction
-								id={data.data?.id ?? ''}
-								status={data?.data?.status ?? ''}
+								id={data.data?.id ?? 1}
+								status={data?.data?.status ?? 'PENDING'}
 							/>
 						</>
 					) : null}

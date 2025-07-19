@@ -1,25 +1,17 @@
-/**
- * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
- * 1. You want to modify request context (see Part 1).
- * 2. You want to create a new middleware or type of procedure (see Part 3).
- *
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
- * need to use are documented accordingly near the end.
- */
-
 import { initTRPC, TRPCError } from '@trpc/server'
-import { headers } from 'next/headers'
+import { cache } from 'react'
 import superjson from 'superjson'
-import { ZodError } from 'zod/v4'
+import { ZodError } from 'zod'
 
-import authServer from '@/lib/auth'
-import db from '@/server/db'
+import { auth } from '@/lib/auth' // Assuming you have an auth utility
+import db from '@/server/db' // Assuming you have a database client (e.g., Prisma)
+import type { ReadonlyRequestCookies } from '@/types/cookie'
 
+const getSession = cache(auth.api.getSession)
 /**
- * CONTEXT
+ * 1. CONTEXT
  *
  * This section defines the "contexts" that are available in the backend API.
- *
  * These allow you to access things when processing a request, like the db, the session, etc.
  *
  * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
@@ -27,25 +19,38 @@ import db from '@/server/db'
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
-	const session = await authServer.getSession({ headers: await headers() })
 
+// Define the shape of the options passed to createTRPCContext
+interface CreateContextOptions {
+	headers: Headers
+	cookies: ReadonlyRequestCookies // Type for Next.js cookies() return
+}
+
+/**
+ * This is the actual tRPC context factory that will be called for each request.
+ * It's responsible for creating an object containing your dependencies (e.g., database client, session data).
+ *
+ * @see https://trpc.io/docs/server/context
+ */
+export const createTRPCContext = async (opts: CreateContextOptions) => {
+	const session = await getSession({
+		headers: opts.headers,
+	})
 	return {
 		db,
 		session,
 		...opts,
 	}
 }
-
 /**
- * INITIALIZATION
+ * 2. INITIALIZATION
  *
  * This is where the tRPC API is initialized, connecting the context and transformer. We also parse
- * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
+ * ZodErrors so that you get type-safety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
-	transformer: superjson,
+	transformer: superjson, // For handling Date, Map, Set, etc. serialization
 	errorFormatter({ shape, error }) {
 		return {
 			...shape,
@@ -56,7 +61,8 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 		}
 	},
 })
-const isAdmin = t.middleware(({ ctx, next }) => {
+
+export const isAdmin = t.middleware(({ ctx, next }) => {
 	if (!ctx.session?.user || ctx.session.user.role !== 'ADMIN') {
 		throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access only' })
 	}

@@ -26,7 +26,6 @@ export const {
 	deleteUser,
 	useSession,
 	revokeSession,
-	getSession,
 	resetPassword,
 	linkSocial,
 	forgetPassword,

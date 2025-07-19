@@ -1,11 +1,11 @@
 import { NewPatient } from '@/components/new-patient'
 import { getSession } from '@/lib/auth'
-import { caller } from '@/trpc/server'
+import { api } from '@/trpc/server'
 
 const Registration = async () => {
 	const session = await getSession()
 	const userId = session?.user.id
-	const data = await (await caller()).patient.getPatientById(userId ?? 'N/A')
+	const data = await api.patient.getPatientById(userId ?? 'N/A')
 
 	return (
 		<div className="flex h-full w-full justify-center">

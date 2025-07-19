@@ -8,8 +8,8 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 
-import { addVitalSigns } from '@/app/actions/appointment'
-import { VitalSignsSchema } from '@/lib/schema'
+import { VitalSignsSchema } from '@/lib/schema' // VERIFY THIS IS THE LATEST VERSION
+import { trpc } from '@/trpc/react'
 
 import { CustomInput } from '../custom-input'
 import { Button } from '../ui/button'
@@ -26,8 +26,8 @@ import { Form } from '../ui/form'
 interface AddVitalSignsProps {
 	patientId: string
 	doctorId: string
-	appointmentId: string
-	medicalId?: string
+	appointmentId: number
+	medicalId?: number
 }
 
 export type VitalSignsFormData = z.infer<typeof VitalSignsSchema>
@@ -38,7 +38,7 @@ export const AddVitalSigns = ({
 	appointmentId,
 	medicalId,
 }: AddVitalSignsProps) => {
-	const [isLoading, setIsLoading] = useState(false)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const router = useRouter()
 
 	const form = useForm<VitalSignsFormData>({
@@ -46,40 +46,58 @@ export const AddVitalSigns = ({
 		defaultValues: {
 			patientId: patientId,
 			medicalId: medicalId,
-			bodyTemperature: undefined,
+			bodyTemperature: undefined, // These should now align with optional numbers
 			heartRate: undefined,
 			systolic: undefined,
 			diastolic: undefined,
-			respiratory_rate: undefined,
-			oxygen_saturation: undefined,
+			respiratoryRate: undefined,
+			oxygenSaturation: undefined,
 			weight: undefined,
 			height: undefined,
 		},
 	})
 
+	const { mutateAsync: addVitalSignsMutation, isPending: isSubmitting } =
+		trpc.appointment.addVitalSigns.useMutation({
+			onSuccess: res => {
+				if (res.success) {
+					toast.success(res.msg || 'Vital signs added successfully!')
+					form.reset()
+					setIsDialogOpen(false)
+					router.refresh()
+				} else {
+					toast.error(res.msg || 'Failed to add vital signs.')
+				}
+			},
+			onError: error => {
+				console.error('Error adding vital signs:', error)
+				toast.error(error.message || 'Something went wrong. Please try again.')
+			},
+		})
+
 	const handleOnSubmit = async (data: VitalSignsFormData) => {
 		try {
-			setIsLoading(true)
-
-			const res = await addVitalSigns(data, appointmentId, doctorId)
-
-			if (res.success) {
-				router.refresh()
-				toast.success(res.msg)
-				form.reset()
-			} else {
-				toast.error(res.msg)
+			if (!patientId || !doctorId || appointmentId === undefined || appointmentId === null) {
+				toast.error('Missing required IDs (Patient, Doctor, or Appointment).')
+				return
 			}
+
+			await addVitalSignsMutation({
+				data,
+				appointmentId: appointmentId,
+				doctorId: doctorId,
+			})
 		} catch (error) {
-			console.log(error)
-			toast.error('Failed to add vital signs')
-		} finally {
-			setIsLoading(false)
+			console.error('Unexpected error during vital signs submission:', error)
+			toast.error('An unexpected error occurred during submission. Please try again.')
 		}
 	}
 
 	return (
-		<Dialog>
+		<Dialog
+			onOpenChange={setIsDialogOpen}
+			open={isDialogOpen}
+		>
 			<DialogTrigger asChild>
 				<Button
 					className="font-normal text-sm"
@@ -108,16 +126,16 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
-								label="Body Temperature (°C)"
+								 label="Body Temperature (°C)"
 								name="bodyTemperature"
-								placeholder="eg.:37.5"
+								placeholder="e.g.: 37.5"
 								type="input"
 							/>
 							<CustomInput
 								control={form.control}
 								label="Heart Rate (BPM)"
 								name="heartRate"
-								placeholder="eg: 54-123"
+								placeholder="e.g.: 54-123"
 								type="input"
 							/>
 						</div>
@@ -125,16 +143,18 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
+								
 								label="Systolic BP"
 								name="systolic"
-								placeholder="eg: 120"
+								placeholder="e.g.: 120"
 								type="input"
 							/>
 							<CustomInput
 								control={form.control}
+								
 								label="Diastolic BP"
 								name="diastolic"
-								placeholder="eg: 80"
+								placeholder="e.g.: 80"
 								type="input"
 							/>
 						</div>
@@ -142,16 +162,18 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
+								
 								label="Weight (Kg)"
 								name="weight"
-								placeholder="eg.: 80"
+								placeholder="e.g.: 80"
 								type="input"
 							/>
 							<CustomInput
 								control={form.control}
+								
 								label="Height (Cm)"
 								name="height"
-								placeholder="eg.: 175"
+								placeholder="e.g.: 175"
 								type="input"
 							/>
 						</div>
@@ -159,15 +181,17 @@ export const AddVitalSigns = ({
 						<div className="flex items-center gap-4">
 							<CustomInput
 								control={form.control}
+								
 								label="Respiratory Rate"
-								name="respiratory_rate"
+								name="respiratoryRate"
 								placeholder="Optional"
 								type="input"
 							/>
 							<CustomInput
 								control={form.control}
+								
 								label="Oxygen Saturation"
-								name="oxygen_saturation"
+								name="oxygenSaturation"
 								placeholder="Optional"
 								type="input"
 							/>
@@ -175,10 +199,10 @@ export const AddVitalSigns = ({
 
 						<Button
 							className="w-full"
-							disabled={isLoading}
+							
 							type="submit"
 						>
-							{isLoading ? 'Submitting...' : 'Submit'}
+							{isSubmitting ? 'Submitting...' : 'Submit'}
 						</Button>
 					</form>
 				</Form>

@@ -1,62 +1,83 @@
-'use client'
+'use client' // This directive is essential for client components in Next.js App Router
 
-import type { QueryClient } from '@tanstack/react-query'
+// Sort imports for Biome (lint/correctness/organizeImports)
 import { QueryClientProvider } from '@tanstack/react-query'
-import { createTRPCClient, httpBatchLink } from '@trpc/client'
+import { httpBatchLink, loggerLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
-import { createTRPCContext } from '@trpc/tanstack-react-query'
 import { useState } from 'react'
-// ^-- to make sure we can mount the Provider from a server component
-import superjson from 'superjson'
+import superjson from 'superjson' // For proper serialization of dates, etc.
 
-import type { AppRouter } from '@/server/api/root'
+import type { AppRouter } from '@/server/api/root' // Import your AppRouter type from the server
 
 import { makeQueryClient } from './query-client'
 
-export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>() // <--- Problematic line
-function getUrl() {
-	if (typeof window !== 'undefined') return '' // Browser should use relative path
-	return process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${process.env.PORT ?? 3000}`
-}
-// 1. Create the tRPC React client instance that gives you the hooks
-export const trpc = createTRPCReact<AppRouter>() // <--- This 'trpc' will have .admin.createNewStaff.useMutation
+// 1. Create the tRPC React client instance
+// This 'trpc' object will contain all your useQuery, useMutation, etc. hooks
+export const trpc = createTRPCReact<AppRouter>()
 
-// 2. Memoize QueryClient for browser (if you don't use makeQueryClient directly)
-let browserQueryClient: QueryClient | undefined
-function getQueryClient() {
-	if (typeof window === 'undefined') {
-		// Server: always make a new query client
-		return makeQueryClient() // Or new QueryClient()
-	}
-	// Browser: make a new query client if we don't already have one
-	if (!browserQueryClient) browserQueryClient = makeQueryClient() // Or new QueryClient()
-	return browserQueryClient
-}
-export function TRPCReactProvider(
-	props: Readonly<{
-		children: React.ReactNode
-	}>,
-) {
-	const queryClient = getQueryClient()
+// 2. Define the TRPCProvider component
+// This component wraps your application and provides the tRPC client and React Query client
+export function TRPCProvider(props: { children: React.ReactNode }) {
+	// Use makeQueryClient to create the QueryClient instance.
+	const [queryClient] = useState(makeQueryClient)
+
+	// State to hold the tRPC client instance
 	const [trpcClient] = useState(() =>
-		createTRPCClient<AppRouter>({
-			// This creates a vanilla tRPC client, not the React hooks client
+		trpc.createClient({
+			// Configure the links for your tRPC client
 			links: [
+				// 1. Logger Link: Logs tRPC calls in development for debugging
+				loggerLink({
+					enabled: opts =>
+						process.env.NODE_ENV === 'development' ||
+						(opts.direction === 'down' && opts.result instanceof Error),
+				}),
+				// 2. HTTP Batch Link: Batches requests to your tRPC endpoint
 				httpBatchLink({
+					// FIX: Use template literal for URL (lint/style/useTemplate)
+					url: `${getBaseUrl()}/api/trpc`,
+					headers() {
+						// This is where you might add Authorization headers if using external auth
+						// const token = getAuthTokenFromLocalStorageOrCookie();
+						// return token ? { Authorization: `Bearer ${token}` } : {};
+						return {}
+					},
+					// FIX: superjson transformer MUST be here for httpBatchLink
 					transformer: superjson,
-					url: getUrl(),
 				}),
 			],
+			// FIX: Remove transformer from here. It is handled by the links.
+			// transformer: superjson,
 		}),
 	)
+
 	return (
+		// QueryClientProvider should typically wrap trpc.Provider
 		<QueryClientProvider client={queryClient}>
-			<TRPCProvider
+			<trpc.Provider
+				client={trpcClient}
 				queryClient={queryClient}
-				trpcClient={trpcClient}
 			>
 				{props.children}
-			</TRPCProvider>
+			</trpc.Provider>
 		</QueryClientProvider>
 	)
+}
+
+/**
+ * Helper function to determine the base URL for your tRPC API.
+ * This handles both client-side and server-side (for API routes) environments.
+ * It's crucial for Vercel deployments.
+ */
+function getBaseUrl() {
+	// Check if running in a browser environment
+	if (typeof window !== 'undefined') {
+		return '' // Browser will automatically use the current domain (relative path)
+	}
+	// Check if Vercel deployment (next.js production environment)
+	if (process.env.VERCEL_URL) {
+		return `https://${process.env.VERCEL_URL}`
+	}
+	// Fallback for local development or other environments
+	return `http://localhost:${process.env.PORT ?? 3000}`
 }

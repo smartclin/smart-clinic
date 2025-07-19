@@ -1,4 +1,4 @@
-import type { Doctor } from '@prisma/client'
+import type { Doctor } from '@prisma/client' // Assuming this Doctor type matches the API response
 import { format } from 'date-fns'
 import { Users } from 'lucide-react'
 
@@ -9,10 +9,11 @@ import { Pagination } from '@/components/pagination'
 import { ProfileImage } from '@/components/profile-image'
 import SearchInput from '@/components/search-input'
 import { Table } from '@/components/tables/table'
+import { getSession } from '@/lib/auth'
+import { api } from '@/trpc/server' // Import the tRPC server client
 import type { SearchParamsProps } from '@/types'
 import { checkRole } from '@/utils/roles'
 import { DATA_LIMIT } from '@/utils/seetings'
-import { getAllDoctors } from '@/utils/services/doctor'
 
 const columns = [
 	{
@@ -50,13 +51,23 @@ const DoctorsList = async (props: SearchParamsProps) => {
 	const page = (searchParams?.p || '1') as string
 	const searchQuery = (searchParams?.q || '') as string
 
-	const { data, totalPages, totalRecords, currentPage } = await getAllDoctors({
+	// Fetch data using the tRPC server client
+	// Assuming api.doctor.getAllDoctors expects { page: number, search: string }
+	const { data, totalPages, totalRecords, currentPage } = await api.doctor.getAllDoctors({
 		page,
 		search: searchQuery,
 	})
 
-	if (!data) return null
-	const isAdmin = await checkRole('ADMIN')
+	// Handle case where data might be null (e.g., if the tRPC procedure explicitly returns null on error/no data)
+	// However, if the tRPC procedure throws on error, this check might not be reached directly
+	// and the component would crash unless wrapped in an error boundary or try-catch.
+	if (!data) {
+		// You might want to return an error message or a loading spinner if data can be null initially
+		return <div className='py-10 text-center'>No doctors found or an error occurred.</div>
+	}
+
+	const session = await getSession()
+	const isAdmin = await checkRole(session, 'ADMIN')
 
 	const renderRow = (item: Doctor) => (
 		<tr
@@ -75,10 +86,13 @@ const DoctorsList = async (props: SearchParamsProps) => {
 					<span className="text-sm capitalize">{item?.specialization}</span>
 				</div>
 			</td>
-			<td className="hidden md:table-cell">{item?.license_number}</td>
+			<td className="hidden md:table-cell">{item?.licenseNumber}</td>
 			<td className="hidden md:table-cell">{item?.phone}</td>
 			<td className="hidden lg:table-cell">{item?.email}</td>
-			<td className="hidden xl:table-cell">{format(item?.created_at, 'yyyy-MM-dd')}</td>
+			<td className="hidden xl:table-cell">
+				{/* Ensure item.created_at is a Date object. tRPC typically deserializes Dates automatically. */}
+				{item?.createdAt ? format(item.createdAt, 'yyyy-MM-dd') : 'N/A'}
+			</td>
 			<td>
 				<div className="flex items-center gap-2">
 					<ViewAction href={`doctors/${item?.id}`} />
@@ -102,7 +116,6 @@ const DoctorsList = async (props: SearchParamsProps) => {
 						className="text-gray-500"
 						size={20}
 					/>
-
 					<p className="font-semibold text-2xl">{totalRecords}</p>
 					<span className="text-gray-600 text-sm xl:text-base">total doctors</span>
 				</div>
@@ -119,7 +132,7 @@ const DoctorsList = async (props: SearchParamsProps) => {
 					renderRow={renderRow}
 				/>
 
-				{totalPages && (
+				{totalPages && ( // Only render pagination if totalPages is available
 					<Pagination
 						currentPage={currentPage}
 						limit={DATA_LIMIT}

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import { getSession } from '@/lib/auth'
-import { trpc } from '@/trpc/server'
+import { api } from '@/trpc/server'
 import { getUserRole } from '@/utils/roles'
 
 import CallToAction from './_components/CTA'
@@ -21,8 +21,8 @@ export default async function HomePage() {
 
 	let _apiHealthy = false
 	try {
-		const status = await trpc.healthCheck.query()
-		_apiHealthy = status.message === 'OK'
+		const status = await api.healthCheck()
+		_apiHealthy = status === 'OK'
 	} catch (e) {
 		console.error('API health check failed:', e)
 	}

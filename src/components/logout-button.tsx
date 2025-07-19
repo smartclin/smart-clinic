@@ -2,7 +2,7 @@
 
 import { LogOut } from 'lucide-react'
 
-import { authClient } from '@/lib/auth/client'
+import { authClient } from '@/lib/auth/auth-client'
 
 import { Button } from './ui/button'
 

@@ -9,10 +9,10 @@ import { type Resolver, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 
-import { createNewPatient, updatePatient } from '@/app/actions/patient'
-import { GENDER, MARITAL_STATUS, RELATION } from '@/lib'
-import { type AuthUser, useUser } from '@/lib/auth/use-auth'
+import { type AuthUser, useUser } from '@/hooks/use-auth'
+import { GENDER, MARITAL_STATUS, NUTRITIONAL_STATUS, RELATION } from '@/lib'
 import { PatientFormSchema } from '@/lib/schema'
+import { trpc } from '@/trpc/react' // Correct tRPC client import
 
 import { CustomInput } from './custom-input'
 import { Button } from './ui/button'
@@ -34,30 +34,77 @@ const defaultValues: PatientFormValues = {
 	address: '',
 	dateOfBirth: new Date(),
 	gender: 'MALE',
-	marital_status: 'single',
-	emergency_contactName: '',
-	emergency_contactNumber: '',
+	maritalStatus: 'single',
+	nutritionalStatus: 'normal',
+	emergencyContactName: '',
+	emergencyContactNumber: '',
 	relation: 'mother',
-	blood_group: '',
+	bloodGroup: '',
 	allergies: '',
-	medical_conditions: '',
+	medicalConditions: '',
 	insuranceNumber: '',
-	insurance_provider: '',
-	medical_history: '',
-	medical_consent: false,
-	privacy_consent: false,
-	service_consent: false,
+	insuranceProvider: '',
+	medicalHistory: '',
+	medicalConsent: false,
+	privacyConsent: false,
+	serviceConsent: false,
 }
 
 export const NewPatient = ({ data, type }: DataProps) => {
 	const router = useRouter()
-	const { user, isLoading } = useUser()
+	const { user, isLoading: isUserLoading } = useUser()
 	const [loading, setLoading] = useState(false)
 
 	const form = useForm<PatientFormValues>({
 		resolver: zodResolver(PatientFormSchema) as Resolver<PatientFormValues>,
 		defaultValues,
 		mode: 'onBlur',
+	})
+
+	// --- tRPC Mutations ---
+	// Create patient mutation
+	const createPatientMutation = trpc.patient.createNewPatient.useMutation({
+		onSuccess: res => {
+			if (res.success) {
+				toast.success(res.msg)
+				form.reset()
+				router.push('/patient')
+			} else {
+				toast.error(res.msg || 'Patient creation failed.')
+			}
+		},
+		onError: error => {
+			console.error('Error creating patient:', error)
+			toast.error(error.message || 'An unexpected error occurred during creation.')
+		},
+		onMutate: () => {
+			setLoading(true)
+		},
+		onSettled: () => {
+			setLoading(false)
+		},
+	})
+
+	// Update patient mutation
+	const updatePatientMutation = trpc.patient.updatePatient.useMutation({
+		onSuccess: res => {
+			if (res.success) {
+				toast.success(res.msg)
+				router.push('/patient')
+			} else {
+				toast.error(res.msg || 'Patient update failed.')
+			}
+		},
+		onError: error => {
+			console.error('Error updating patient:', error)
+			toast.error(error.message || 'An unexpected error occurred during update.')
+		},
+		onMutate: () => {
+			setLoading(true)
+		},
+		onSettled: () => {
+			setLoading(false)
+		},
 	})
 
 	const getCreateDefaultValues = useCallback((user: AuthUser): PatientFormValues => {
@@ -77,35 +124,36 @@ export const NewPatient = ({ data, type }: DataProps) => {
 			phone: data.phone ?? '',
 			dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : new Date(),
 			gender: data.gender,
-			marital_status: data.marital_status as PatientFormValues['marital_status'],
+			maritalStatus: data.maritalStatus as PatientFormValues['maritalStatus'],
+			nutritionalStatus: data.nutritionalStatus as PatientFormValues['nutritionalStatus'],
 			address: data.address ?? '',
 		}
 	}, [])
 
 	const getFamilyInfo = useCallback((data: Patient) => {
 		return {
-			emergency_contactName: data.emergency_contactName ?? '',
-			emergency_contactNumber: data.emergency_contactNumber ?? '',
+			emergencyContactName: data.emergencyContactName ?? '',
+			emergencyContactNumber: data.emergencyContactNumber ?? '',
 			relation: data.relation as PatientFormValues['relation'],
 		}
 	}, [])
 
 	const getMedicalInfo = useCallback((data: Patient) => {
 		return {
-			blood_group: data.blood_group ?? '',
+			bloodGroup: data.bloodGroup ?? '',
 			allergies: data.allergies ?? '',
-			medical_conditions: data.medical_conditions ?? '',
+			medicalConditions: data.medicalConditions ?? '',
 			insuranceNumber: data.insuranceNumber ?? '',
-			insurance_provider: data.insurance_provider ?? '',
-			medical_history: data.medical_history ?? '',
+			insuranceProvider: data.insuranceProvider ?? '',
+			medicalHistory: data.medicalHistory ?? '',
 		}
 	}, [])
 
 	const getConsentInfo = useCallback((data: Patient) => {
 		return {
-			medical_consent: data.medical_consent ?? false,
-			privacy_consent: data.privacy_consent ?? false,
-			service_consent: data.service_consent ?? false,
+			medicalConsent: data.medicalConsent ?? false,
+			privacyConsent: data.privacyConsent ?? false,
+			serviceConsent: data.serviceConsent ?? false,
 		}
 	}, [])
 
@@ -122,7 +170,7 @@ export const NewPatient = ({ data, type }: DataProps) => {
 	)
 
 	useEffect(() => {
-		if (isLoading) return
+		if (isUserLoading) return
 
 		if (type === 'create') {
 			if (user) {
@@ -131,32 +179,50 @@ export const NewPatient = ({ data, type }: DataProps) => {
 		} else if (type === 'update' && data) {
 			form.reset(getUpdateDefaultValues(data))
 		}
-	}, [isLoading, user, data, type, form, getCreateDefaultValues, getUpdateDefaultValues])
+	}, [isUserLoading, user, data, type, form, getCreateDefaultValues, getUpdateDefaultValues])
 
 	const onSubmit = async (values: PatientFormValues) => {
-		setLoading(true)
-		const userId = user?.id ?? 'anonymous_user'
-		const action = type === 'create' ? createNewPatient : updatePatient
+		const userId = user?.id
+
+		if (!userId) {
+			toast.error('User not authenticated.')
+			return
+		}
 
 		try {
-			const res = await action(values, userId)
-			if (res?.success) {
-				toast.success(res.msg)
-				form.reset()
-				router.push('/patient')
+			if (type === 'create') {
+				// Pass the form values and userId.
+				// Your server-side `createNewPatient` procedure should expect:
+				// z.object({...PatientFormSchema, userId: z.string()})
+				await createPatientMutation.mutateAsync({
+					pid: data?.id ?? '', // The patient ID
+					data: values,
+				})
 			} else {
-				toast.error(res?.msg || 'Submission failed.')
+				// type === 'update'
+				if (!data?.id) {
+					toast.error('Patient ID is missing for update.')
+					return
+				}
+				// The error message indicates 'userId' is not a top-level property
+				// for `updatePatient`, and it expects a `data` object for the patient details.
+				// So, we'll pass the patient details under a 'data' key.
+				// Your server-side `updatePatient` procedure should expect:
+				// z.object({ pid: z.string(), data: PatientFormSchema })
+				// The `userId` is likely being pulled from the session/context on the server.
+				await updatePatientMutation.mutateAsync({
+					pid: data.id, // The patient ID
+					data: values, // All the form values under a 'data' key
+				})
 			}
 		} catch (error) {
-			console.error('Error:', error)
+			console.error('Submission error:', error)
 			const message = error instanceof Error ? error.message : 'An unexpected error occurred.'
 			toast.error(message)
-		} finally {
-			setLoading(false)
 		}
 	}
 
-	if (isLoading) {
+	if (isUserLoading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
 				<Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -235,9 +301,18 @@ export const NewPatient = ({ data, type }: DataProps) => {
 							<CustomInput
 								control={form.control}
 								label="Marital Status"
-								name="marital_status"
+								name="maritalStatus"
 								placeholder="Select marital status"
 								selectList={MARITAL_STATUS}
+								type="select"
+							/>
+
+							<CustomInput
+								control={form.control}
+								label="Nutritional Status"
+								name="nutritionalStatus"
+								placeholder="Select marital status"
+								selectList={NUTRITIONAL_STATUS}
 								type="select"
 							/>
 						</div>
@@ -255,14 +330,14 @@ export const NewPatient = ({ data, type }: DataProps) => {
 							<CustomInput
 								control={form.control}
 								label="Emergency contact name"
-								name="emergency_contactName"
+								name="emergencyContactName"
 								placeholder="Anne Smith"
 								type="input"
 							/>
 							<CustomInput
 								control={form.control}
 								label="Emergency contact"
-								name="emergency_contactNumber"
+								name="emergencyContactNumber"
 								placeholder="675444467"
 								type="input"
 							/>
@@ -282,7 +357,7 @@ export const NewPatient = ({ data, type }: DataProps) => {
 							<CustomInput
 								control={form.control}
 								label="Blood group"
-								name="blood_group"
+								name="bloodGroup"
 								placeholder="A+"
 								type="input"
 							/>
@@ -296,14 +371,14 @@ export const NewPatient = ({ data, type }: DataProps) => {
 							<CustomInput
 								control={form.control}
 								label="Medical conditions"
-								name="medical_conditions"
+								name="medicalConditions"
 								placeholder="Medical conditions"
 								type="input"
 							/>
 							<CustomInput
 								control={form.control}
 								label="Medical history"
-								name="medical_history"
+								name="medicalHistory"
 								placeholder="Medical history"
 								type="input"
 							/>
@@ -311,7 +386,7 @@ export const NewPatient = ({ data, type }: DataProps) => {
 								<CustomInput
 									control={form.control}
 									label="Insurance provider"
-									name="insurance_provider"
+									name="insuranceProvider"
 									placeholder="Provider"
 									type="input"
 								/>
@@ -333,21 +408,21 @@ export const NewPatient = ({ data, type }: DataProps) => {
 									<CustomInput
 										control={form.control}
 										label="Privacy Policy Agreement"
-										name="privacy_consent"
+										name="privacyConsent"
 										placeholder="I consent to the collection..."
 										type="checkbox"
 									/>
 									<CustomInput
 										control={form.control}
 										label="Terms of Service Agreement"
-										name="service_consent"
+										name="serviceConsent"
 										placeholder="I agree to the Terms..."
 										type="checkbox"
 									/>
 									<CustomInput
 										control={form.control}
 										label="Informed Medical Consent"
-										name="medical_consent"
+										name="medicalConsent"
 										placeholder="I provide informed consent..."
 										type="checkbox"
 									/>

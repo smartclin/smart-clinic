@@ -1,6 +1,7 @@
 import { authRouter } from '@/server/api/routers/auth.route'
 import {
 	createCallerFactory,
+	createTRPCContext,
 	createTRPCRouter,
 	protectedProcedure,
 	publicProcedure,
@@ -23,7 +24,7 @@ import { vitalSignsRouter } from './routers/VitalSigns.router'
  */
 export const appRouter = createTRPCRouter({
 	auth: authRouter,
-	healthCheck: publicProcedure.query(() => {
+	healthCheck: publicProcedure.query(async () => {
 		return 'OK'
 	}),
 	privateData: protectedProcedure.query(({ ctx }) => {
@@ -54,3 +55,5 @@ export type AppRouter = typeof appRouter
  *       ^? Post[]
  */
 export const createCaller = createCallerFactory(appRouter)
+
+export const createContext = createTRPCContext

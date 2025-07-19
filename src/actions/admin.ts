@@ -14,7 +14,7 @@ export async function createNewStaff(data: StaffInput) {
 		const session = await getSession()
 		const userId = session?.user?.id
 
-		if (!userId || !(await checkRole('ADMIN'))) {
+		if (!userId || !(await checkRole(session, 'ADMIN'))) {
 			return { success: false, msg: 'Unauthorized' }
 		}
 

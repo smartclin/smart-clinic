@@ -174,21 +174,23 @@ export const CreateStaffOutputSchema = z.union([
 
 export const VitalSignsSchema = z.object({
 	patientId: z.string(),
-	medicalId: z.number(),
-	bodyTemperature: z.coerce.number({
-		message: 'Enter recorded body temperature',
-	}),
-	heartRate: z.string({ message: 'Enter recorded heartbeat rate' }),
-	systolic: z.coerce.number({
-		message: 'Enter recorded systolic blood pressure',
-	}),
-	diastolic: z.coerce.number({
-		message: 'Enter recorded diastolic blood pressure',
-	}),
-	respiratoryRate: z.coerce.number().optional(),
-	oxygenSaturation: z.coerce.number().optional(),
-	weight: z.coerce.number({ message: 'Enter recorded weight (Kg)' }),
-	height: z.coerce.number({ message: 'Enter recorded height (Cm)' }),
+	medicalId: z.number().int().optional(),
+
+	bodyTemperature: z.number().min(0, 'Temperature cannot be negative').optional(),
+
+	heartRate: z.number().int().min(0, 'Heart rate cannot be negative').optional(),
+
+	systolic: z.number().int().min(0, 'Systolic BP cannot be negative').optional(),
+
+	diastolic: z.number().int().min(0, 'Diastolic BP cannot be negative').optional(),
+
+	respiratoryRate: z.number().int().min(0, 'Respiratory rate cannot be negative').optional(),
+
+	oxygenSaturation: z.number().int().min(0).max(100, 'Oxygen saturation must be 0-100').optional(),
+
+	weight: z.number().min(0, 'Weight cannot be negative').optional(),
+
+	height: z.number().min(0, 'Height cannot be negative').optional(),
 })
 
 export const DiagnosisSchema = z.object({

@@ -6,7 +6,7 @@ import { emptyAppointmentCounts, StatSummary } from '@/components/charts/stat-su
 import { StatCard } from '@/components/stat-card'
 import { RecentAppointments } from '@/components/tables/recent-appointment'
 import { Button } from '@/components/ui/button'
-import { caller } from '@/trpc/server'
+import { api, HydrateClient } from '@/trpc/server' // Import server-side tRPC client and HydrateClient
 import type { AvailableDoctorProps } from '@/types/data-types'
 
 const AdminDashboard = async () => {
@@ -18,7 +18,7 @@ const AdminDashboard = async () => {
 		totalDoctors,
 		totalPatient,
 		totalAppointments,
-	} = await (await caller()).admin.getAdminDashboardStats()
+	} = await api.admin.getAdminDashboardStats()
 
 	const cardData = [
 		{
@@ -60,58 +60,60 @@ const AdminDashboard = async () => {
 	]
 
 	return (
-		<div className="flex flex-col gap-6 rounded-xl px-3 py-6 xl:flex-row">
-			{/* LEFT */}
-			<div className="w-full xl:w-[69%]">
-				<div className="mb-8 rounded-xl bg-white p-4">
-					<div className="mb-4 flex items-center justify-between">
-						<h1 className="font-semibold text-lg">Statistics</h1>
-						<Button
-							size={'sm'}
-							variant={'outline'}
-						>
-							{new Date().getFullYear()}
-						</Button>
+		<HydrateClient>
+			<div className="flex flex-col gap-6 rounded-xl px-3 py-6 xl:flex-row">
+				{/* LEFT */}
+				<div className="w-full xl:w-[69%]">
+					<div className="mb-8 rounded-xl bg-white p-4">
+						<div className="mb-4 flex items-center justify-between">
+							<h1 className="font-semibold text-lg">Statistics</h1>
+							<Button
+								size={'sm'}
+								variant={'outline'}
+							>
+								{new Date().getFullYear()}
+							</Button>
+						</div>
+
+						<div className="flex w-full flex-wrap gap-5">
+							{cardData?.map((el, _index) => (
+								<StatCard
+									className={el.className}
+									icon={el.icon}
+									iconClassName={el.iconClassName}
+									key={el.title}
+									link={el.link}
+									note={el.note}
+									title={el.title}
+									value={el.value as number}
+								/>
+							))}
+						</div>
 					</div>
 
-					<div className="flex w-full flex-wrap gap-5">
-						{cardData?.map((el, _index) => (
-							<StatCard
-								className={el.className}
-								icon={el.icon}
-								iconClassName={el.iconClassName}
-								key={el.title}
-								link={el.link}
-								note={el.note}
-								title={el.title}
-								value={el.value as number}
-							/>
-						))}
+					<div className="h-[500px]">
+						<AppointmentChart data={monthlyData ?? []} />
+					</div>
+
+					<div className="mt-8 rounded-xl bg-white p-4">
+						<RecentAppointments data={last5Records ?? []} />
 					</div>
 				</div>
 
-				<div className="h-[500px]">
-					<AppointmentChart data={monthlyData ?? []} />
-				</div>
+				{/* RIGHT */}
 
-				<div className="mt-8 rounded-xl bg-white p-4">
-					<RecentAppointments data={last5Records ?? []} />
+				<div className="w-full xl:w-[30%]">
+					<div className="h-[450px] w-full">
+						<StatSummary
+							data={appointmentCounts ?? emptyAppointmentCounts}
+							total={totalAppointments ?? 0}
+						/>
+					</div>
+
+					<AvailableDoctors data={availableDoctors as AvailableDoctorProps} />
 				</div>
 			</div>
-
-			{/* RIGHT */}
-
-			<div className="w-full xl:w-[30%]">
-				<div className="h-[450px] w-full">
-					<StatSummary
-						data={appointmentCounts ?? emptyAppointmentCounts}
-						total={totalAppointments ?? 0}
-					/>
-				</div>
-
-				<AvailableDoctors data={availableDoctors as AvailableDoctorProps} />
-			</div>
-		</div>
+		</HydrateClient>
 	)
 }
 

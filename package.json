@@ -65,6 +65,7 @@
 		"@tanstack/react-query-persist-client": "^5.83.0",
 		"@tanstack/react-virtual": "^3.13.12",
 		"@trpc/client": "^11.4.3",
+		"@trpc/next": "11.4.3",
 		"@trpc/react-query": "^11.4.3",
 		"@trpc/server": "^11.4.3",
 		"@trpc/tanstack-react-query": "^11.4.3",

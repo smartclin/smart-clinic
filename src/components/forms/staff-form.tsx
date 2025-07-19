@@ -1,14 +1,15 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
+import { zodResolver } from '@hookform/resolvers/zod' // Make sure this is installed: npm install @hookform/resolvers
 import type { TRPCClientErrorLike } from '@trpc/client'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form' // Import useForm
 import { toast } from 'sonner'
 import type { z } from 'zod'
 
-import { type CreateStaffOutputSchema, StaffSchema } from '@/lib/schema'
+import type { CreateStaffOutputSchema } from '@/lib/schema'
+import { StaffSchema as StaffFormSchema } from '@/lib/schema' // Alias to avoid name conflict with local type
 import type { AppRouter } from '@/server/api/root'
 import { trpc } from '@/trpc/react'
 
@@ -19,27 +20,41 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../u
 
 const TYPES = [{ label: 'Nurse', value: 'NURSE' }]
 
+// Define default values for the form
+const defaultValues: z.infer<typeof StaffFormSchema> = {
+	name: '',
+	email: '',
+	phone: '',
+	licenseNumber: '',
+	department: '',
+	address: '',
+	password: '',
+	role: 'STAFF', // Default role if not provided by the user
+}
+
 export const StaffForm = () => {
 	const router = useRouter()
 
+	// Initialize react-hook-form
+	const form = useForm<z.infer<typeof StaffFormSchema>>({
+		resolver: zodResolver(StaffFormSchema),
+		defaultValues: defaultValues,
+		mode: 'onBlur', // Or 'onChange' or 'onSubmit'
+	})
 
 	// Infer the types for the mutation's success and error callbacks
 	type CreateNewStaffOutput = z.infer<typeof CreateStaffOutputSchema>
-
 	type CreateNewStaffError = TRPCClientErrorLike<AppRouter>
 
 	const { mutateAsync: createStaffMutation, isPending: isSubmitting } =
 		trpc.admin.createNewStaff.useMutation({
-			// <-- Revert to createNewStaff as per your router
 			onSuccess: (res: CreateNewStaffOutput) => {
 				// Now 'res' will have the correct type, and type guards can be used
-				// You might need to refine these checks based on the exact final shape
-				// from the server, especially if 'success' can be a generic boolean from other parts.
 				if (res.success) {
 					// This check should now be type-safe
 					toast.success(res.msg || res.message || 'Staff added successfully!')
-					form.reset()
-					router.refresh()
+					form.reset() // Reset the form after successful submission
+					router.refresh() // Refresh the page to show new staff
 				} else {
 					toast.error(res.message || res.msg || 'Failed to add staff.')
 				}
@@ -50,10 +65,12 @@ export const StaffForm = () => {
 			},
 		})
 
-	const handleSubmit = async (values: z.infer<typeof StaffSchema>) => {
+	const handleSubmit = async (values: z.infer<typeof StaffFormSchema>) => {
 		try {
-			await createStaffMutation(values)
+			await createStaffMutation(values) // Pass the form values to the mutation
 		} catch (error) {
+			// Errors from tRPC mutations are generally caught by the onError callback,
+			// but this outer catch can handle unexpected errors during the call itself.
 			console.error('Unexpected error during staff submission:', error)
 			toast.error('An unexpected error occurred during submission. Please try again.')
 		}
@@ -75,6 +92,8 @@ export const StaffForm = () => {
 
 				<div>
 					<Form {...form}>
+						{' '}
+						{/* Pass the `form` object to the Form context */}
 						<form
 							className="mt-5 space-y-8 2xl:mt-10"
 							onSubmit={form.handleSubmit(handleSubmit)}

@@ -1,13 +1,15 @@
 // lib/auth-role.ts
 
-import { getSession } from '@/lib/auth' // your BetterAuth instance
+import { getSession, type Session } from '@/lib/auth' // Assuming Session type is also exported from '@/lib/auth'
 // This ensures that only valid role strings are used.
 export type UserRoles = 'ADMIN' | 'PATIENT' | 'STAFF' | 'DOCTOR'
 
-export const checkRole = async (role: UserRoles) => {
-	const session = await getSession()
+export const checkRole = async (session: Session | null, roleToCheck: UserRoles) => {
+	// No need to call getSession() again here, as 'session' is passed as an argument.
+	// The previous error was because 'session' was already declared as a parameter.
 
-	return session?.user?.role?.toLowerCase() === role.toLowerCase()
+	// Ensure session and session.user exist before accessing role
+	return session?.user?.role?.toLowerCase() === roleToCheck.toLowerCase()
 }
 
 export const getRole = async (): Promise<UserRoles> => {

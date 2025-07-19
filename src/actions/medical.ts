@@ -4,6 +4,7 @@
 import type { Payment as PaymentPrismaType } from '@prisma/client'
 import type { z } from 'zod'
 
+import { getSession } from '@/lib/auth'
 import {
 	AddNewBillInputSchema,
 	type DiagnosisFormData,
@@ -69,8 +70,9 @@ export const addDiagnosis = async (data: DiagnosisFormData, appointmentId: strin
 
 export async function addNewBill(data: z.infer<typeof AddNewBillInputSchema>) {
 	try {
-		const isAdmin = await checkRole('ADMIN')
-		const isDoctor = await checkRole('DOCTOR')
+		const session = await getSession()
+		const isAdmin = await checkRole(session, 'ADMIN')
+		const isDoctor = await checkRole(session, 'DOCTOR')
 
 		if (!isAdmin && !isDoctor) {
 			return {
